@@ -1,0 +1,53 @@
+name: "Build/Deploy: Kids Bedtime"
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/bedtime/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/build-bedtime.yml'
+  pull_request:
+    paths:
+      - 'apps/bedtime/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/build-bedtime.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-bedtime-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22.13.0
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Test bedtime worker
+        run: npm test --workspace kids-bedtime
+
+      - name: Build static assets
+        run: npm run build --workspace kids-bedtime
+
+      - name: Deploy kids-bedtime Worker
+        if: github.event_name != 'pull_request'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: npx wrangler deploy --config apps/bedtime/wrangler.jsonc

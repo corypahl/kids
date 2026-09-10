@@ -49,8 +49,10 @@ export default function App() {
       </main>
 
       {/* Footer */}
-      <footer className="mt-8 text-white/30 text-sm font-medium">
-        Sweet dreams! ✨
+      <footer className="mt-8 text-white/40 text-sm font-medium flex items-center gap-3">
+        <a href="/" className="hover:text-white/80 transition-colors">← Kids Hub</a>
+        <span>•</span>
+        <span>Sweet dreams! ✨</span>
       </footer>
     </div>
   );

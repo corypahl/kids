@@ -1,0 +1,53 @@
+name: "Build/Deploy: Kids Gateway"
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'services/gateway/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/build-gateway.yml'
+  pull_request:
+    paths:
+      - 'services/gateway/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/build-gateway.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-gateway-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22.13.0
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run gateway tests
+        run: npm test --workspace kids-gateway
+
+      - name: Validate Worker bundle
+        run: npm run build --workspace kids-gateway
+
+      - name: Deploy kids-gateway
+        if: github.event_name != 'pull_request'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: npx wrangler deploy --config services/gateway/wrangler.jsonc
