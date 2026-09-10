@@ -1,0 +1,22 @@
+{
+  "name": "kids",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "services/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "build:bedtime": "npm run build --workspace kids-bedtime",
+    "build:gateway": "npm run build --workspace kids-gateway",
+    "lint": "npm run lint --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present"
+  },
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "devDependencies": {
+    "wrangler": "^4.128.0"
+  }
+}

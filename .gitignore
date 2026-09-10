@@ -1,0 +1,22 @@
+# JavaScript & Node
+node_modules/
+dist/
+dist-r2/
+out/
+.wrangler/
+coverage/
+*.tsbuildinfo
+
+# Local Cloudflare configuration and secrets
+.dev.vars
+.dev.vars.*
+
+# Local environment
+.env.local
+.env.*.local
+
+# Editors and OS
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
