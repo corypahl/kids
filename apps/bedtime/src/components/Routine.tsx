@@ -16,7 +16,7 @@ import { BASE_BEDTIME_TASKS } from '../config/routines';
 import { playTick, playSpinClick, playHooray, playTada } from '../lib/audio';
 
 const COMMON_EMOJIS = [
-  '⭐', '🚽', '👕', '🪮', '🪥', '👃', '🧴', '🧸', '📚', '💧', 
+  '💊', '⭐', '🚽', '👕', '🪮', '🪥', '👃', '🧴', '🧸', '📚', '💧', 
   '🛌', '🌙', '☀️', '🍎', '🥛', '🛁', '🫧', '🧻', '👖', '🧦'
 ];
 
