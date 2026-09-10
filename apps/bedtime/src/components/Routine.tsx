@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { Task } from '../types';
+import { BASE_BEDTIME_TASKS } from '../config/routines';
 import { playTick, playSpinClick, playHooray, playTada } from '../lib/audio';
 
 const COMMON_EMOJIS = [
@@ -19,14 +20,7 @@ const COMMON_EMOJIS = [
   '🛌', '🌙', '☀️', '🍎', '🥛', '🛁', '🫧', '🧻', '👖', '🧦'
 ];
 
-const DEFAULT_TASKS: Task[] = [
-  { id: '1', text: 'Go to the Bathroom', color: '#FF6B6B', emoji: '🚽' },
-  { id: '2', text: 'Pajamas', color: '#4ECDC4', emoji: '👕' },
-  { id: '3', text: 'Brush Hair', color: '#45B7D1', emoji: '🪮' },
-  { id: '4', text: 'Brush Teeth', color: '#96CEB4', emoji: '🪥' },
-  { id: '5', text: 'Nose Spray', color: '#FFEEAD', emoji: '👃' },
-  { id: '6', text: 'Clean Ears/Lotion', color: '#D4A5A5', emoji: '🧴' },
-];
+const DEFAULT_TASKS: Task[] = BASE_BEDTIME_TASKS;
 
 const COLORS = [
   '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEEAD', 
@@ -206,11 +200,27 @@ export default function Routine({ name, avatar, avatarColor, storagePrefix, bgCo
     setShowEmojiPicker(false);
   };
 
-  const removeTask = (id: string) => {
-    setTasks(tasks.filter(t => t.id !== id));
+  const deleteTask = (id: string) => {
+    setTasks(prev => prev.filter(t => t.id !== id));
+    setCompletedTasks(prev => prev.filter(t => t.id !== id));
+    setSelectedTask(prev => (prev?.id === id ? null : prev));
   };
 
-  const resetApp = () => {
+  const restartRoutine = () => {
+    setTasks(prev => {
+      const remainingIds = new Set(prev.map(t => t.id));
+      const restored = completedTasks.filter(t => !remainingIds.has(t.id));
+      return [...prev, ...restored];
+    });
+    setCompletedTasks([]);
+    setSelectedTask(null);
+    setIsTimerActive(false);
+    setTimeLeft(0);
+    setRotation(0);
+    setStars(0);
+  };
+
+  const resetToDefaults = () => {
     setTasks(initialTasks);
     setCompletedTasks([]);
     setSelectedTask(null);
@@ -249,8 +259,10 @@ export default function Routine({ name, avatar, avatarColor, storagePrefix, bgCo
             <Settings2 className="w-4 h-4" />
           </button>
           <button 
-            onClick={resetApp}
+            onClick={restartRoutine}
             className="p-2 rounded-full bg-white/10 border border-white/20 hover:bg-white/20 text-white transition-colors shadow-sm"
+            title="Restart routine for tonight"
+            aria-label="Restart routine"
           >
             <RotateCcw className="w-4 h-4" />
           </button>
@@ -313,8 +325,11 @@ export default function Routine({ name, avatar, avatarColor, storagePrefix, bgCo
                   </button>
                 </div>
                 <div className="space-y-2 max-h-[30vh] overflow-y-auto pr-2 custom-scrollbar">
+                  {tasks.length === 0 && completedTasks.length === 0 && (
+                    <p className="text-white/50 italic text-xs py-2 text-center">No tasks configured.</p>
+                  )}
                   {tasks.map((task) => (
-                    <div key={task.id} className="flex items-center justify-between p-2 bg-white/5 rounded-xl group border border-white/5 hover:border-white/20 transition-colors">
+                    <div key={task.id} className="flex items-center justify-between p-2 bg-white/5 rounded-xl border border-white/5 hover:border-white/20 transition-colors">
                       <div className="flex items-center gap-2">
                         <div className="w-6 h-6 rounded-full flex items-center justify-center text-white shadow-sm text-xs" style={{ backgroundColor: task.color }}>
                           {task.emoji}
@@ -322,14 +337,43 @@ export default function Routine({ name, avatar, avatarColor, storagePrefix, bgCo
                         <span className="text-xs font-medium text-white/90">{task.text}</span>
                       </div>
                       <button 
-                        onClick={() => removeTask(task.id)}
-                        className="text-white/30 hover:text-[#FF7675] opacity-0 group-hover:opacity-100 transition-all"
+                        onClick={() => deleteTask(task.id)}
+                        className="text-white/50 hover:text-[#FF7675] p-1.5 rounded-lg hover:bg-white/10 transition-colors"
+                        title="Delete task"
+                        aria-label={`Delete ${task.text}`}
                       >
-                        <Trash2 className="w-3 h-3" />
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                  {completedTasks.map((task) => (
+                    <div key={task.id} className="flex items-center justify-between p-2 bg-white/5 rounded-xl border border-white/5 hover:border-white/20 transition-colors opacity-75">
+                      <div className="flex items-center gap-2">
+                        <div className="w-6 h-6 rounded-full flex items-center justify-center text-white shadow-sm text-xs opacity-60" style={{ backgroundColor: task.color }}>
+                          {task.emoji}
+                        </div>
+                        <span className="text-xs font-medium text-white/60 line-through">{task.text}</span>
+                        <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-white/10 text-white/50 font-medium">Done</span>
+                      </div>
+                      <button 
+                        onClick={() => deleteTask(task.id)}
+                        className="text-white/50 hover:text-[#FF7675] p-1.5 rounded-lg hover:bg-white/10 transition-colors"
+                        title="Delete task"
+                        aria-label={`Delete ${task.text}`}
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     </div>
                   ))}
                 </div>
+
+                <button
+                  onClick={resetToDefaults}
+                  className="w-full mt-3 py-2 px-3 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-xs font-semibold text-white/80 hover:text-white transition-colors flex items-center justify-center gap-2 shadow-sm"
+                  title="Reset tasks to default configuration"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" /> Reset to Default Config
+                </button>
               </div>
 
               <div className="pt-3 border-t border-white/20">
@@ -571,7 +615,7 @@ export default function Routine({ name, avatar, avatarColor, storagePrefix, bgCo
                   initial={{ opacity: 0, x: 10 }}
                   animate={{ opacity: 1, x: 0 }}
                   key={task.id} 
-                  className="flex items-center justify-between p-2 bg-white/5 rounded-xl group border border-white/5"
+                  className="flex items-center justify-between p-2 bg-white/5 rounded-xl border border-white/5 hover:border-white/20 transition-colors"
                 >
                   <div className="flex items-center gap-2 line-through text-white/50">
                     <div className="w-5 h-5 rounded-full flex items-center justify-center text-white opacity-50 text-[10px]" style={{ backgroundColor: task.color }}>
@@ -579,13 +623,24 @@ export default function Routine({ name, avatar, avatarColor, storagePrefix, bgCo
                     </div>
                     <span className="text-xs font-medium">{task.text}</span>
                   </div>
-                  <button
-                    onClick={() => restoreTask(task)}
-                    className="text-white/30 hover:text-[#2ECC71] opacity-0 group-hover:opacity-100 transition-all p-1"
-                    title="Restore task"
-                  >
-                    <RotateCcw className="w-3 h-3" />
-                  </button>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => restoreTask(task)}
+                      className="text-white/60 hover:text-[#2ECC71] p-1.5 rounded-lg hover:bg-white/10 transition-colors"
+                      title="Restore task to wheel"
+                      aria-label={`Restore ${task.text}`}
+                    >
+                      <RotateCcw className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={() => deleteTask(task.id)}
+                      className="text-white/50 hover:text-[#FF7675] p-1.5 rounded-lg hover:bg-white/10 transition-colors"
+                      title="Delete task"
+                      aria-label={`Delete ${task.text}`}
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
                 </motion.div>
               ))}
             </div>
