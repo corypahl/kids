@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Christmas Village</string>
+    <string name="offline_title">Christmas Village is offline</string>
+    <string name="offline_description">Connect to the internet and try again. Your saved Christmas wishes and Glitter diary are kept on the family server.</string>
+    <string name="retry">Try again</string>
+    <string name="choose_photo">Choose a Glitter photo</string>
+</resources>
