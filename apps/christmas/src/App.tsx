@@ -6,6 +6,7 @@ import { familyToday, nativeChristmas, readFamilyKey, requestApi, storeFamilyKey
 import type { VillageState, Wish } from './api';
 import { AdventCalendar, GlitterDiary, SantaWishlist } from './Features';
 import { CookieBakery, ReindeerBarn, VillageHome } from './Village';
+import { CharacterCreator } from './CharacterCreator';
 import type { VillageDestination } from './Village';
 
 const TABS: { id: Tab; label: string; icon: string }[] = [
@@ -198,23 +199,31 @@ function TriviaGame() {
   );
 }
 
-function Games() {
-  const [game, setGame] = useState<'memory' | 'counting' | 'trivia'>('memory');
+function Games({ child }: { child: ChildId }) {
+  const [game, setGame] = useState<'elf' | 'snowman' | 'memory' | 'counting' | 'trivia'>('elf');
   return (
     <section>
-      <div className="content-heading"><span className="eyebrow">SANTA’S ARCADE</span><h2>Let’s play!</h2><p>Choose a game. Everyone can join in.</p></div>
-      <div className="game-picker">
+      <div className="content-heading"><span className="eyebrow">THE TOY FACTORY</span>
+        <h2>Make, dress up & play!</h2>
+        <p>Design an elf or snowman, or choose one of our Christmas games.</p></div>
+      <div className="game-picker creator-game-picker">
         {([
+          ['elf', '🧝', 'Create an Elf', 'Dress up your own elf'],
+          ['snowman', '⛄', 'Make a Snowman', 'Mix and match accessories'],
           ['memory', '🎄', 'Picture Match', 'Flip and find pairs'],
           ['counting', '🎁', 'Count & Play', 'Great for little elves'],
           ['trivia', '🔔', 'Christmas Quiz', 'Fun holiday questions'],
         ] as const).map(([id, icon, label, desc]) => (
-          <button key={id} onClick={() => setGame(id)} className={'game-tile ' + (game === id ? 'active' : '')}>
+          <button key={id} onClick={() => setGame(id)}
+            aria-pressed={game === id}
+            className={'game-tile ' + (game === id ? 'active' : '')}>
             <span className="game-tile-icon">{icon}</span><strong>{label}</strong><small>{desc}</small>
           </button>
         ))}
       </div>
-      {game === 'memory' ? <MemoryGame /> : game === 'counting' ? <CountingGame /> : <TriviaGame />}
+      {game === 'elf' ? <CharacterCreator key={child + '-elf'} kind="elf" child={child} /> :
+        game === 'snowman' ? <CharacterCreator key={child + '-snowman'} kind="snowman" child={child} /> :
+        game === 'memory' ? <MemoryGame /> : game === 'counting' ? <CountingGame /> : <TriviaGame />}
     </section>
   );
 }
@@ -385,7 +394,7 @@ export default function App() {
         {tab === 'home' && <Home days={untilChristmas} child={active.name} childId={child}
           completed={state.completed.length} wishes={state.wishes.length} opened={state.opened}
           ready={isReady} onVisit={visit} onOpen={openAdvent} />}
-        {tab === 'games' && <Games />}
+        {tab === 'games' && <Games child={child} />}
         {tab === 'activities' && isReady && <Activities child={active.name} completed={state.completed}
           toggle={id => void toggleActivity(id)} initialCategory={activityCategory} />}
         {tab === 'wishlist' && isReady && <SantaWishlist child={active.name} wishes={state.wishes}

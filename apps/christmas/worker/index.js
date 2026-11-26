@@ -53,6 +53,46 @@ function fileOk(file, allowed, maxBytes) {
   return file && typeof file.arrayBuffer === 'function' && allowed.has(file.type) && file.size > 0 && file.size <= maxBytes;
 }
 const mediaSuffix = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp', 'image/heic': 'heic', 'audio/webm': 'webm', 'audio/mp4': 'm4a', 'audio/ogg': 'ogg', 'audio/mpeg': 'mp3', 'audio/aac': 'aac', 'audio/3gpp': '3gp' };
+const CHARACTER_LOOK_OPTIONS = {
+  elf: {
+    skin: ['#F6CEAA','#E8B18B','#C98861','#995C40','#623B32'],
+    hair: ['#5A3528','#33262C','#D6A55E','#E66B45','#EEE7CE','#B185D8'],
+    hairStyle: ['fringe','curls','pigtails','swoop'],
+    eyes: ['#513829','#478CB8','#43956A','#9C71A8'],
+    face: ['smile','wink','giggle','surprised'],
+    outfit: ['tunic','dress','overalls','jacket'],
+    outfitColor: ['#C54C5C','#277D67','#4F88C8','#9E71C7','#E8AC50','#E88DA5'],
+    hat: ['pointy','pom','hood','crown','none'],
+    accessory: ['wand','gift','candy','teddy','none'],
+    boots: ['#664B42','#B84450','#326E5B','#755493'],
+    scene: ['snow','night','workshop','candy']
+  },
+  snowman: {
+    shape: ['classic','round','tall'],
+    face: ['smile','wink','giggle','surprised'],
+    eyes: ['coal','blue','green','lashes'],
+    nose: ['carrot','button','star','candy'],
+    arms: ['sticks','mittens','branches','none'],
+    hat: ['top','knit','santa','earmuffs','none'],
+    scarf: ['red','teal','purple','gold','none'],
+    buttons: ['coal','stars','hearts','candy','none'],
+    scene: ['snow','night','workshop','candy']
+  }
+};
+function validCharacterBody(body) {
+  if (!validChild(body?.child) || !Object.hasOwn(CHARACTER_LOOK_OPTIONS, body?.kind) ||
+    typeof body?.name !== 'string' || !body.name.trim() || body.name.trim().length > 24 ||
+    !body.look || typeof body.look !== 'object' || Array.isArray(body.look)) return false;
+  const accepted = CHARACTER_LOOK_OPTIONS[body.kind];
+  const fields = Object.keys(accepted);
+  const supplied = Object.keys(body.look);
+  return supplied.length === fields.length &&
+    fields.every(key => Object.hasOwn(body.look, key) && accepted[key].includes(body.look[key]));
+}
+function characterRow(row) {
+  return { id: row.id, child: row.child, kind: row.kind, name: row.name,
+    look: JSON.parse(row.look_json), updatedAt: row.updated_at };
+}
 async function api(request, env, pathname, url) {
   // The parent dashboard uses only its distinct parent key; no kid/app credential is needed.
   // Child API routes remain guarded by the existing family key.
@@ -70,6 +110,49 @@ async function api(request, env, pathname, url) {
   const method = request.method;
 
   if (path === '/status' && method === 'GET') return response({ ready: true });
+
+  if (path === '/characters' && method === 'GET') {
+    const child = url.searchParams.get('child');
+    const kind = url.searchParams.get('kind');
+    if (!validChild(child) || !Object.hasOwn(CHARACTER_LOOK_OPTIONS, kind)) return fail('Invalid character gallery.', 400);
+    const results = await env.DB.prepare(
+      'SELECT id, child, kind, name, look_json, updated_at FROM character_creations WHERE child = ? AND kind = ? ORDER BY updated_at DESC, created_at DESC LIMIT 24'
+    ).bind(child, kind).all();
+    return response({ creations: results.results.map(characterRow) });
+  }
+
+  if (path === '/characters' && method === 'POST') {
+    const body = await safeJson(request);
+    if (!validCharacterBody(body)) return fail('Invalid character design.', 400);
+    const count = await env.DB.prepare(
+      'SELECT COUNT(*) AS total FROM character_creations WHERE child = ? AND kind = ?'
+    ).bind(body.child, body.kind).first();
+    if (count.total >= 24) return fail('Your character collection is full. Remove one to make space!', 409);
+    const id = crypto.randomUUID();
+    await env.DB.prepare(
+      'INSERT INTO character_creations(id, child, kind, name, look_json) VALUES (?, ?, ?, ?, ?)'
+    ).bind(id, body.child, body.kind, body.name.trim(), JSON.stringify(body.look)).run();
+    return response({ id }, 201);
+  }
+
+  const characterMatch = path.match(/^\/characters\/([a-f0-9-]{36})$/);
+  if (characterMatch && method === 'PATCH') {
+    const body = await safeJson(request);
+    if (!validCharacterBody(body)) return fail('Invalid character design.', 400);
+    const updated = await env.DB.prepare(
+      'UPDATE character_creations SET name = ?, look_json = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND child = ? AND kind = ?'
+    ).bind(body.name.trim(), JSON.stringify(body.look), characterMatch[1], body.child, body.kind).run();
+    return updated.meta.changes ? response({ id: characterMatch[1] }) : fail('Character not found.', 404);
+  }
+  if (characterMatch && method === 'DELETE') {
+    const child = url.searchParams.get('child');
+    const kind = url.searchParams.get('kind');
+    if (!validChild(child) || !Object.hasOwn(CHARACTER_LOOK_OPTIONS, kind)) return fail('Invalid character.', 400);
+    const deleted = await env.DB.prepare(
+      'DELETE FROM character_creations WHERE id = ? AND child = ? AND kind = ?'
+    ).bind(characterMatch[1], child, kind).run();
+    return deleted.meta.changes ? response({ ok: true }) : fail('Character not found.', 404);
+  }
 
   if (path === '/state' && method === 'GET') {
     const child = url.searchParams.get('child');
