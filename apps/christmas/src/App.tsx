@@ -6,6 +6,7 @@ import { familyToday, nativeChristmas, readFamilyKey, requestApi, storeFamilyKey
 import type { VillageState, Wish } from './api';
 import { AdventCalendar, GlitterDiary, SantaWishlist } from './Features';
 import { CookieBakery, ReindeerBarn, VillageHome } from './Village';
+import { CharacterCreator } from './CreatorGames';
 import type { VillageDestination } from './Village';
 
 const TABS: { id: Tab; label: string; icon: string }[] = [
@@ -198,8 +199,10 @@ function TriviaGame() {
   );
 }
 
-function Games() {
-  const [game, setGame] = useState<'memory' | 'counting' | 'trivia'>('memory');
+type GameId = 'memory' | 'counting' | 'trivia' | 'elf' | 'snowman';
+function Games({ game, setGame, child }: {
+  game: GameId; setGame: (game: GameId) => void; child: ChildId;
+}) {
   return (
     <section>
       <div className="content-heading"><span className="eyebrow">SANTA’S ARCADE</span><h2>Let’s play!</h2><p>Choose a game. Everyone can join in.</p></div>
@@ -208,13 +211,17 @@ function Games() {
           ['memory', '🎄', 'Picture Match', 'Flip and find pairs'],
           ['counting', '🎁', 'Count & Play', 'Great for little elves'],
           ['trivia', '🔔', 'Christmas Quiz', 'Fun holiday questions'],
+          ['elf', '🧝', 'Elf Creator', 'Design your own elf'],
+          ['snowman', '⛄', 'Snowman Creator', 'Build a snow friend'],
         ] as const).map(([id, icon, label, desc]) => (
           <button key={id} onClick={() => setGame(id)} className={'game-tile ' + (game === id ? 'active' : '')}>
             <span className="game-tile-icon">{icon}</span><strong>{label}</strong><small>{desc}</small>
           </button>
         ))}
       </div>
-      {game === 'memory' ? <MemoryGame /> : game === 'counting' ? <CountingGame /> : <TriviaGame />}
+      {game === 'memory' ? <MemoryGame /> : game === 'counting' ? <CountingGame /> :
+        game === 'trivia' ? <TriviaGame /> :
+        <CharacterCreator key={game + '-' + child} kind={game} child={child} />}
     </section>
   );
 }
@@ -273,6 +280,7 @@ function Home({ days, child, childId, completed, wishes, opened, ready, onVisit,
 export default function App() {
   const nativeApp = Boolean(nativeChristmas());
   const [tab, setTab] = useState<Tab>('home');
+  const [game, setGame] = useState<GameId>('memory');
   const [activityCategory, setActivityCategory] = useState<'All' | 'Create' | 'Play' | 'Kindness' | 'Family'>('All');
   const [child, setChild] = useState<ChildId>('emma');
   const [familyKey, setFamilyKey] = useState(readFamilyKey);
@@ -333,6 +341,7 @@ export default function App() {
     await reload(child);
   }
   const visit = (destination: VillageDestination) => {
+    if (destination.game) setGame(destination.game);
     if (destination.tab === 'activities') setActivityCategory(destination.category || 'All');
     setTab(destination.tab);
   };
@@ -385,7 +394,7 @@ export default function App() {
         {tab === 'home' && <Home days={untilChristmas} child={active.name} childId={child}
           completed={state.completed.length} wishes={state.wishes.length} opened={state.opened}
           ready={isReady} onVisit={visit} onOpen={openAdvent} />}
-        {tab === 'games' && <Games />}
+        {tab === 'games' && <Games game={game} setGame={setGame} child={child} />}
         {tab === 'activities' && isReady && <Activities child={active.name} completed={state.completed}
           toggle={id => void toggleActivity(id)} initialCategory={activityCategory} />}
         {tab === 'wishlist' && isReady && <SantaWishlist child={active.name} wishes={state.wishes}

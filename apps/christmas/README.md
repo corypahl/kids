@@ -6,8 +6,8 @@ Family Christmas app at kids.corypahl.dev/christmas/ with separate child profile
 - Wish lists: each child's typed or voice-transcribed wishes sync through D1 and can be viewed or removed on different devices. Browser speech recognition may involve a speech service; typing remains supported.
 - Glitter's Diary: one entry per child per date between November 1 and December 25 with optional photo, actual voice recording, and note. D1 stores metadata; private R2 stores media.
 - Grown-ups: standalone web dashboard at https://kids.corypahl.dev/christmas/parent/ for all three kids' wish lists, purchases, and Glitter diary photos/voice recordings. It requires only the separate parent secret, in memory for the current page session. No adult controls appear in the children's Android app.
-- Games: existing memory, counting, and trivia. Activity completion syncs to D1.
-- New activities: Cookie Bakery's tap-to-decorate cookie game and Reindeer Barn's snack-feeding game with fun facts. These creative mini-games reset on leaving the page; existing D1 progress and diary/wish data remain unchanged.
+- Games: existing memory, counting, and trivia, plus the new **Elf Creator** and **Snowman Creator**. Dress-up controls let kids customize faces, hair, hats, outfits, accessories, and scenes. Characters can dance, randomize looks, and save up to 10 designs per child and creator on the current device (localStorage only; not yet synced through D1).
+- New activities: Cookie Bakery's tap-to-decorate cookie game and Reindeer Barn's snack-feeding game with fun facts. Two direct village destinations, Elf Design Studio and Snowman Garden, open their corresponding creators in the Toy Factory. These creative mini-games reset on leaving the page; existing D1 progress and diary/wish data remain unchanged.
 - Original scene art and decorations are vector/CSS illustrations, not Google's Santa Tracker assets. No external game assets or new backend migrations are required.
 - Android: the existing WebView shell immediately receives the refreshed web interface after the Cloudflare deployment. No Google Play configuration or APK release is needed for these changes.
 

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import type { MouseEvent } from 'react';
 import type { Tab } from './data';
 
-export type VillageDestination = { tab: Tab; category?: 'All' | 'Create' | 'Play' | 'Kindness' | 'Family' };
+export type VillageDestination = { tab: Tab; category?: 'All' | 'Create' | 'Play' | 'Kindness' | 'Family'; game?: 'elf' | 'snowman' };
 
 type VillageStop = {
   id: string;
@@ -18,6 +18,8 @@ type VillageStop = {
 export const VILLAGE_STOPS: VillageStop[] = [
   { id: 'santa', label: "Santa's Workshop", icon: '🎅', description: 'Tell Santa your wishes', x: 16, y: 57, destination: { tab: 'wishlist' } },
   { id: 'toys', label: 'Toy Factory', icon: '🎮', description: 'Play Christmas games', x: 38, y: 51, destination: { tab: 'games' } },
+  { id: 'elf-studio', label: 'Elf Design Studio', icon: '🧝', description: 'Dress up your own elf', x: 36, y: 32, destination: { tab: 'games', game: 'elf' } },
+  { id: 'snowman-garden', label: 'Snowman Garden', icon: '⛄', description: 'Build and style a snowman', x: 82, y: 31, destination: { tab: 'games', game: 'snowman' } },
   { id: 'advent', label: 'Advent Tree', icon: '🎄', description: 'Open a daily surprise', x: 58, y: 61, advent: true },
   { id: 'glitter', label: "Glitter's Cottage", icon: '📸', description: 'Discover Glitter’s diary', x: 78, y: 56, destination: { tab: 'diary' } },
   { id: 'bakery', label: 'Cookie Bakery', icon: '🍪', description: 'Decorate a cookie', x: 27, y: 87, destination: { tab: 'bakery' } },
@@ -62,7 +64,7 @@ function Pine({ x, y, size = 1 }: { x: number; y: number; size?: number }) {
 }
 
 function VillageIllustration() {
-  return <svg className="village-scene" viewBox="0 0 1200 690" role="img" aria-label="A colorful snowy Christmas village with Santa's workshop, a toy factory, Glitter's cottage, bakery, reindeer barn, craft cabin, post office, and an Advent tree." preserveAspectRatio="xMidYMid meet">
+  return <svg className="village-scene" viewBox="0 0 1200 690" role="img" aria-label="A colorful snowy Christmas village with Santa's workshop, a toy factory, Glitter's cottage, bakery, reindeer barn, craft cabin, post office, and an Advent tree, with an Elf Design Studio and Snowman Garden." preserveAspectRatio="xMidYMid meet">
     <defs>
       <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
         <stop offset="0" stopColor="#215a87"/><stop offset=".61" stopColor="#65b4c1"/><stop offset="1" stopColor="#d5f2e4"/>
@@ -93,6 +95,16 @@ function VillageIllustration() {
     <House x={650} y={466} large wall="#bf7661" roof="#8e4e5b" door="#5d4b48" window="#ffc879"/>
     <House x={970} y={462} wall="#f3d597" roof="#6095aa" door="#679a8d" window="#fff1a3"/>
     <Pine x={588} y={479} size={1.46}/>
+    <g transform="translate(965 235)" aria-hidden="true">
+      <ellipse cx="0" cy="62" rx="55" ry="12" fill="#c0d9db"/>
+      <circle cx="0" cy="35" r="36" fill="#fffef6" stroke="#d5e9ed" strokeWidth="4"/>
+      <circle cx="0" cy="-15" r="27" fill="#fffef6" stroke="#d5e9ed" strokeWidth="4"/>
+      <circle cx="-9" cy="-20" r="3" fill="#485967"/><circle cx="9" cy="-20" r="3" fill="#485967"/>
+      <path d="M0 -12l29 5-29 5Z" fill="#f2ac55"/>
+      <path d="M-18 -43h36v-33h-36Z" fill="#527a91"/>
+      <path d="M-33 -44h66" stroke="#527a91" strokeWidth="7" strokeLinecap="round"/>
+      <path d="M-19 13Q0 25 19 13" fill="none" stroke="#d87d8b" strokeWidth="9"/>
+    </g>
     <path d="M587 230L594 247L612 248L598 260L602 278L587 268L571 277L577 260L562 247L580 247Z" fill="#ffe59b" stroke="#fff2c0" strokeWidth="4"/>
     <circle className="village-glow" cx="587" cy="254" r="48" fill="url(#lanternGlow)"/>
     <g transform="translate(1109 326)">
