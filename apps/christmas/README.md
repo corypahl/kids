@@ -15,7 +15,7 @@ Family Christmas app at kids.corypahl.dev/christmas/ with separate child profile
    npx wrangler r2 bucket create kids-christmas-media
 2. Add repository secret KIDS_CHRISTMAS_D1_DATABASE_ID with the real database UUID returned by Cloudflare. The Christmas deployment workflow injects D1/R2 bindings and applies the migration automatically. For local Wrangler development, copy bindings from wrangler.configured.example.jsonc into wrangler.jsonc and replace the placeholder UUID.
 3. The GitHub Action runs D1 migrations remotely before deployment. For manual deployment after configuring bindings, run:
-   npx wrangler d1 migrations apply kids-christmas --remote --config apps/christmas/wrangler.jsonc --yes
+   npx wrangler d1 migrations apply kids-christmas --remote --config apps/christmas/wrangler.jsonc
 4. Set two different, long, random secrets on the kids-christmas Worker: CHRISTMAS_FAMILY_KEY (used once on each tablet/phone) and CHRISTMAS_PARENT_KEY (for purchases). Never commit them. Wrangler example:
    npx wrangler secret put CHRISTMAS_FAMILY_KEY --name kids-christmas
    npx wrangler secret put CHRISTMAS_PARENT_KEY --name kids-christmas
