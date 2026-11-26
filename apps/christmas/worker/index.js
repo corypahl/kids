@@ -1,3 +1,5 @@
+import { accessAuthorized } from './access.js';
+
 const CHILDREN = new Set(['emma', 'sophie', 'adam']);
 const IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/heic']);
 const AUDIO_TYPES = new Set(['audio/webm', 'audio/mp4', 'audio/ogg', 'audio/mpeg', 'audio/aac', 'audio/3gpp']);
@@ -35,9 +37,6 @@ function validDiaryDate(s) {
   const now = todayParts();
   return s <= [now.year, String(now.month).padStart(2, '0'), String(now.day).padStart(2, '0')].join('-');
 }
-function familyAuthorized(request, env) {
-  return !!env.CHRISTMAS_FAMILY_KEY && request.headers.get('X-Family-Key') === env.CHRISTMAS_FAMILY_KEY;
-}
 function parentAuthorized(request, env) {
   return !!env.CHRISTMAS_PARENT_KEY && request.headers.get('X-Parent-Key') === env.CHRISTMAS_PARENT_KEY;
 }
@@ -49,9 +48,10 @@ function fileOk(file, allowed, maxBytes) {
 }
 const mediaSuffix = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp', 'image/heic': 'heic', 'audio/webm': 'webm', 'audio/mp4': 'm4a', 'audio/ogg': 'ogg', 'audio/mpeg': 'mp3', 'audio/aac': 'aac', 'audio/3gpp': '3gp' };
 async function api(request, env, pathname, url) {
-  // Never expose family data, recordings, or parent shopping state without a configured key.
-  if (!env.CHRISTMAS_FAMILY_KEY || !env.DB) return fail('Family storage has not been configured yet.', 503);
-  if (!familyAuthorized(request, env)) return fail('Family key required or incorrect.', 401);
+  // Family data stays private even when a caller bypasses the Access-protected hostname.
+  if (!env.DB || !env.CHRISTMAS_ACCESS_TEAM_DOMAIN || !env.CHRISTMAS_ACCESS_AUD)
+    return fail('Christmas storage or Cloudflare Access has not been configured.', 503);
+  if (!await accessAuthorized(request, env)) return fail('Cloudflare Access sign-in required.', 401);
   if (request.method !== 'GET' && request.headers.get('Origin') && new URL(request.headers.get('Origin')).origin !== url.origin) {
     return fail('Invalid request origin.', 403);
   }
