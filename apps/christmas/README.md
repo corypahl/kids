@@ -16,16 +16,18 @@ Family Christmas app at kids.corypahl.dev/christmas/ with separate child profile
 2. Add repository secret KIDS_CHRISTMAS_D1_DATABASE_ID with the real database UUID returned by Cloudflare. The Christmas deployment workflow injects D1/R2 bindings and applies the migration automatically. For local Wrangler development, copy bindings from wrangler.configured.example.jsonc into wrangler.jsonc and replace the placeholder UUID.
 3. The GitHub Action runs D1 migrations remotely before deployment. For manual deployment after configuring bindings, run:
    npx wrangler d1 migrations apply kids-christmas --remote --config apps/christmas/wrangler.jsonc
-4. Set two different, long, random secrets on the kids-christmas Worker: CHRISTMAS_FAMILY_KEY (used once on each tablet/phone) and CHRISTMAS_PARENT_KEY (for purchases). Never commit them. Wrangler example:
-   npx wrangler secret put CHRISTMAS_FAMILY_KEY --name kids-christmas
-   npx wrangler secret put CHRISTMAS_PARENT_KEY --name kids-christmas
-5. Deploy kids-christmas then kids-gateway, or rerun the existing build-christmas GitHub Action when the account permits it. Initial Worker creation previously failed due to Cloudflare token permissions (see issue #3).
+4. In Cloudflare Zero Trust, create or identify the **Self-hosted Access application** protecting `kids.corypahl.dev/christmas/*` (including its API). Allow the family's Google identities that should use the app. The kids must be able to use the app via this Access policy. Do not use an unauthenticated Bypass policy.
+5. Add two **GitHub repository variables** under Settings → Secrets and variables → Actions → Variables:
+   - `KIDS_CHRISTMAS_ACCESS_TEAM_DOMAIN` = `https://<your-team>.cloudflareaccess.com` (your Access issuer URL, without trailing slash)
+   - `KIDS_CHRISTMAS_ACCESS_AUD` = the **AUD tag** shown on that Access application (not your account ID). These are configuration values, not secrets.
+6. Keep only the `CHRISTMAS_PARENT_KEY` Worker secret for private gift purchase tracking. Once the new deployment works, you may delete the unused `CHRISTMAS_FAMILY_KEY` secret. Do not commit either secret to Git.
+7. Merge and deploy the Access-authenticated version. The GitHub workflow injects Access issuer and audience configuration, runs migrations, and deploys the Worker and gateway. It will stop before deployment if the Access variables are absent, to avoid exposing private data. The worker's direct `workers.dev` route and preview URLs are disabled by this deployment.
 
-Until bindings and secrets are configured, the private API returns 503 rather than silently storing wishes on one tablet.
+After the family's normal Cloudflare Access sign-in, Christmas Village loads automatically without any **family key** input. No migration of D1/R2 data is needed.
 
 ## Privacy and limits
 
-All private endpoints require the family key. Photo and voice files remain in private R2 and are served through authenticated media requests, not public bucket URLs. Parent gift flags are available only with the separate parent key. The shared family key identifies a device, not the specific child. Use strong secrets, Cloudflare Access/rate limits, and a data deletion/retention policy before wider use. Browser MediaRecorder requires HTTPS and microphone permission. Photo limit 8 MB; audio limit 6 MB. Test device-specific formats. Strip photo metadata if location privacy is a concern.
+Every private API call and R2 media request verifies the **signed Cloudflare Access JWT** with the team's published JWKS, correct issuer, audience and expiry. A spoofed Access email header is insufficient; direct Worker requests cannot bypass this check. Photo and voice files stay in private R2. The separate parent key still gates purchased-gift flags. Cloudflare Access policy controls which Google identities can access the family content; make sure it is restricted to the household. Use rate limiting and a data retention policy, and test device-specific microphone formats. Photo limit 8 MB; audio limit 6 MB. Strip photo metadata if location privacy is a concern.
 
 Existing browser-local data under christmas-village-v1 is untouched, but is not automatically imported into the new D1 lists. Back it up before clearing the old browser profile.
 
