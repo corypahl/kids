@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import type { ChildId } from './data';
 
 export type CreatorKind = 'elf' | 'snowman';
@@ -61,22 +61,22 @@ function loadSaved(kind: CreatorKind, child: ChildId): SavedCharacter[] {
       .map(item => ({ id: item.id as string, name: item.name.slice(0, 28), outfit: validate(kind, item.outfit), created: typeof item.created === 'number' ? item.created : 0 }));
   } catch { return []; }
 }
-function Scene({ scene = 0, kind }: { scene?: number; kind: CreatorKind }) {
+function Scene({ scene = 0, kind, id }: { scene?: number; kind: CreatorKind; id: string }) {
   const palette = kind === 'elf'
     ? [['#d5f3e9','#eff9e8'],['#80bbd2','#e3f7f2'],['#ffd6df','#fff3d4'],['#183a69','#536baa']][scene]
     : [['#b0ddec','#ebf8f2'],['#233b74','#7b97cf'],['#f7b3c0','#ffe3ab'],['#2b6099','#61c4ad']][scene];
   return <g>
     <defs>
-      <linearGradient id="creator-sky" x1="0" x2="0" y1="0" y2="1"><stop stopColor={palette[0]}/><stop offset="1" stopColor={palette[1]}/></linearGradient>
-      <linearGradient id="creator-floor" x1="0" x2="0" y1="0" y2="1"><stop stopColor="#fffdf6"/><stop offset="1" stopColor="#dcebe3"/></linearGradient>
+      <linearGradient id={id + "-sky"} x1="0" x2="0" y1="0" y2="1"><stop stopColor={palette[0]}/><stop offset="1" stopColor={palette[1]}/></linearGradient>
+      <linearGradient id={id + "-floor"} x1="0" x2="0" y1="0" y2="1"><stop stopColor="#fffdf6"/><stop offset="1" stopColor="#dcebe3"/></linearGradient>
     </defs>
-    <rect x="0" y="0" width="360" height="420" rx="26" fill="url(#creator-sky)"/>
+    <rect x="0" y="0" width="360" height="420" rx="26" fill={"url(#" + id + "-sky)"}/>
     {scene === 1 && <><circle cx="289" cy="71" r="27" fill="#fff8d4"/><circle cx="302" cy="63" r="27" fill={palette[0]}/></>}
     {scene === 2 && <><path d="M0 127 L50 92 L99 127 L140 92 L184 127 L224 92 L266 127 L311 92 L360 122" stroke="#fff4dd" strokeWidth="8" fill="none"/>
       {Array.from({length: 8},(_,i)=><circle key={i} cx={i*48+12} cy={116+i%2*8} r="8" fill={['#ffdf77','#f28ab1','#8bcbab'][i%3]}/>)}</>}
     {scene === 3 && <><path d="M0 75Q80 30 142 79T360 71" fill="none" stroke="#d5ffda" strokeWidth="20" opacity=".3"/><path d="M0 115Q80 71 150 116T360 107" fill="none" stroke="#f3afff" strokeWidth="11" opacity=".25"/></>}
     {Array.from({length:14},(_,i)=><g key={i}><circle cx={(i*83+35)%352} cy={(i*57+18)%280} r={i%3+2} fill="#fffefa" opacity=".8"/></g>)}
-    <path d="M0 334Q85 305 176 330T360 333V420H0Z" fill="url(#creator-floor)"/>
+    <path d="M0 334Q85 305 176 330T360 333V420H0Z" fill={"url(#" + id + "-floor)"}/>
     <path d="M0 363Q110 348 176 363T360 363" fill="none" stroke="#fffef4" strokeWidth="9" opacity=".9"/>
     {Array.from({length:4},(_,i)=><g key={i} transform={'translate('+(i*108+8)+' '+(326+i%2*22)+')'} opacity=".7">
       <path d="M0 -46L-25 -5H25Z" fill="#39816e" stroke="#dcf8ea" strokeWidth="4"/>
@@ -100,6 +100,7 @@ function Mouth({ variant, y = 201 }: { variant: number; y?: number }) {
   return <path d={variant===3?'M166 '+y+'q14 15 31 0M197 '+y+'l9 -4':'M166 '+y+'q16 19 33 0'} stroke="#8e575d" strokeWidth="4" strokeLinecap="round" fill="none"/>;
 }
 function ElfPortrait({ look }: { look: Outfit }) {
+  const id = useId().replace(/:/g, '');
   const skin = option('elf','skin',look).color || '#f5c8a7';
   const hair = option('elf','hair',look).color || '#5d3c32';
   const outfit = option('elf','outfit',look).color || '#239676';
@@ -107,7 +108,7 @@ function ElfPortrait({ look }: { look: Outfit }) {
   const scarf = option('elf','scarf',look).color || '#f8d477';
   const hairdo = selected(look,'hairdo'), hat = selected(look,'hat');
   return <svg className="creator-svg" viewBox="0 0 360 420" role="img" aria-label="Your customized Christmas elf">
-    <Scene scene={selected(look,'scene')} kind="elf"/>
+    <Scene scene={selected(look,'scene')} kind="elf" id={id}/>
     <ellipse cx="183" cy="359" rx="100" ry="21" fill="#537477" opacity=".2"/>
     {/* Hair, ears and arms are behind the head and clothes */}
     {hairdo===2 && <><ellipse cx="103" cy="151" rx="26" ry="43" fill={hair}/><ellipse cx="261" cy="151" rx="26" ry="43" fill={hair}/><path d="M106 119l-13 -10M260 119l13 -10" stroke="#ef9caa" strokeWidth="9"/></>}
@@ -158,6 +159,7 @@ function ElfPortrait({ look }: { look: Outfit }) {
   </svg>;
 }
 function SnowPortrait({ look }: { look: Outfit }) {
+  const id = useId().replace(/:/g, '');
   const snow = option('snowman','snow',look).color || '#fbfcff';
   const scarf = option('snowman','scarf',look).color || '#e66b85';
   const shape = selected(look,'shape');
@@ -166,7 +168,7 @@ function SnowPortrait({ look }: { look: Outfit }) {
   const hat = selected(look,'hat');
   const buttons = selected(look,'buttons');
   return <svg className="creator-svg" viewBox="0 0 360 420" role="img" aria-label="Your customized snowman">
-    <Scene scene={selected(look,'scene')} kind="snowman"/>
+    <Scene scene={selected(look,'scene')} kind="snowman" id={id}/>
     <ellipse cx="182" cy="364" rx="105" ry="18" fill="#658d91" opacity=".22"/>
     <g transform={'translate(180 344) scale('+scaleX+' '+scaleY+') translate(-180 -344)'}>
       {/* Arms behind the snowy body */}
