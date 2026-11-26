@@ -1,8 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
-import type { FormEvent } from 'react';
 import { ACTIVITIES, CHILDREN, TRIVIA } from './data';
 import type { ChildId, Tab } from './data';
-import { familyToday, readFamilyKey, requestApi, storeFamilyKey } from './api';
+import { familyToday, requestApi } from './api';
 import type { VillageState, Wish } from './api';
 import { AdventCalendar, GlitterDiary, ParentWishes, SantaWishlist } from './Features';
 
@@ -284,10 +283,8 @@ function Home({ days, child, childId, completed, wishes, opened, ready, goTo, on
 export default function App() {
   const [tab, setTab] = useState<Tab>('home');
   const [child, setChild] = useState<ChildId>('emma');
-  const [familyKey, setFamilyKey] = useState(readFamilyKey);
-  const [keyDraft, setKeyDraft] = useState(familyKey);
   const [state, setState] = useState<VillageState>({ wishes: [], completed: [], opened: [] });
-  const [status, setStatus] = useState<'loading' | 'ready' | 'needs-key' | 'error'>(familyKey ? 'loading' : 'needs-key');
+  const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const [error, setError] = useState('');
   const sequence = useRef(0);
   const [, setClockTick] = useState(0);
@@ -298,28 +295,20 @@ export default function App() {
   }, []);
   const active = CHILDREN.find(item => item.id === child)!;
 
-  async function reload(profile: ChildId = child, key: string = familyKey) {
+  async function reload(profile: ChildId = child) {
     const seq = ++sequence.current;
-    if (!key) { setStatus('needs-key'); return; }
     setStatus('loading');
     try {
-      const value = await requestApi<VillageState>('state?child=' + profile, { key });
+      const value = await requestApi<VillageState>('state?child=' + profile);
       if (seq !== sequence.current) return;
       setState(value); setError(''); setStatus('ready');
     } catch (e) {
       if (seq !== sequence.current) return;
-      setStatus('error'); setError(e instanceof Error ? e.message : 'Unable to connect to family storage.');
+      setStatus('error'); setError(e instanceof Error ? e.message : 'Unable to load family data.');
     }
   }
-  useEffect(() => { void reload(child, familyKey); }, [child, familyKey]);
+  useEffect(() => { void reload(child); }, [child]);
 
-  async function connect(e: FormEvent) {
-    e.preventDefault();
-    const key = keyDraft.trim();
-    if (!key) return;
-    storeFamilyKey(key); setFamilyKey(key);
-    await reload(child, key);
-  }
   async function addWish(name: string, icon: string) {
     await requestApi('wishes', { method: 'POST', body: { child, name, icon } });
     await reload(child);
@@ -365,22 +354,14 @@ export default function App() {
       </nav>
       <main className="page-main" key={tab + child}>
         {!isReady && <div className="family-connect">
-          <h3>🔒 Connect the family’s Christmas storage</h3>
-          <p>Wish lists, Glitter’s photos and recordings, and daily progress are private and shared between devices.</p>
-          <form className="family-key-form" onSubmit={connect}>
-            <label htmlFor="family-key">Family key</label>
-            <input type="password" id="family-key" value={keyDraft} autoComplete="off"
-              onChange={e => setKeyDraft(e.target.value)} placeholder="Family access key" />
-            <button className="action" type="submit" disabled={!keyDraft.trim() || status === 'loading'}>
-              {status === 'loading' ? 'Connecting…' : 'Connect'}
-            </button>
-          </form>
-          {status === 'error' && <p className="form-error" role="alert">{error}</p>}
-          {status === 'loading' && <p role="status">Loading family data…</p>}
+          <h3>{status === 'loading' ? '☁️ Loading Christmas Village…' : '🔒 Family data is unavailable'}</h3>
+          {status === 'loading' ? <p role="status">Getting your saved wishes, activity progress, and Glitter’s Diary…</p> : <>
+            <p>Your Cloudflare Access session may need to be refreshed. The family data stays private.</p>
+            <p className="form-error" role="alert">{error}</p>
+            <button className="action" type="button" onClick={() => void reload(child)}>Retry</button>
+          </>}
         </div>}
-        {isReady && <div className="family-status"><span>☁️ Connected to your family lists</span>
-          <button className="pill" onClick={() => { storeFamilyKey(''); setFamilyKey(''); setKeyDraft(''); setStatus('needs-key'); }}>Change family key</button>
-        </div>}
+        {isReady && <div className="family-status"><span>☁️ Family data synced</span></div>}
         {isReady && error && <p className="form-error" role="alert">{error}</p>}
         {tab === 'home' && <Home days={untilChristmas} child={active.name} childId={child}
           completed={state.completed.length} wishes={state.wishes.length} opened={state.opened}
