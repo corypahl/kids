@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 import { CHILDREN, WISH_IDEAS } from './data';
 import type { ChildId, Tab } from './data';
-import { familyToday, getMedia, requestApi } from './api';
+import { familyToday, getMedia, nativeChristmas, requestApi } from './api';
 import type { DiaryEntry, ParentWish, Wish } from './api';
 
 type SpeechResult = { results: ArrayLike<ArrayLike<{ transcript: string }>> };
@@ -36,7 +36,26 @@ export function SantaWishlist({ child, wishes, onAdd, onFavorite, onRemove }: {
   const [saving, setSaving] = useState(false);
   const recognition = useRef<SpeechEngine | null>(null);
   useEffect(() => () => { recognition.current?.stop(); }, []);
+  useEffect(() => {
+    function onNativeDictation(event: Event) {
+      const result = (event as CustomEvent<{ text?: string; error?: string }>).detail;
+      setListening(false);
+      if (result?.text) {
+        setName(result.text.slice(0, 100)); setReview(true); setError('');
+      } else {
+        setError(result?.error || 'Speech recognition was cancelled. You can type your wish.');
+      }
+    }
+    window.addEventListener('christmas-native-dictation', onNativeDictation);
+    return () => window.removeEventListener('christmas-native-dictation', onNativeDictation);
+  }, []);
   function startMic() {
+    const native = nativeChristmas();
+    if (native) {
+      try { setListening(true); setError(''); native.dictateWish(); }
+      catch { setListening(false); setError('Unable to start voice typing. You can still type your wish.'); }
+      return;
+    }
     const Ctor = speechConstructor();
     if (!Ctor) { setError('Voice typing is unavailable in this browser. You can still type your wish.'); return; }
     try {
@@ -78,7 +97,7 @@ export function SantaWishlist({ child, wishes, onAdd, onFavorite, onRemove }: {
             <div className="voice-input">
               <input id="wish-name" value={name} maxLength={100} placeholder="I would love…"
                 onChange={e => { setName(e.target.value); setError(''); setReview(false); }} />
-              <button className={listening ? 'mic-button recording' : 'mic-button'} type="button" onClick={listening ? () => recognition.current?.stop() : startMic}
+              <button className={listening ? 'mic-button recording' : 'mic-button'} type="button" onClick={listening ? () => { if (!nativeChristmas()) recognition.current?.stop(); } : startMic}
                 aria-label={listening ? 'Stop listening' : 'Say your Christmas wish'} aria-pressed={listening}>{listening ? '⏹' : '🎤'}</button>
             </div>
             {listening && <p className="inline-feedback" role="status">Listening… say your wish!</p>}
