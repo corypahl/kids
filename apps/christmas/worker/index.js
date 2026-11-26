@@ -48,7 +48,7 @@ function decodeBase64Url(value) {
 }
 
 function accessConfiguration(env) {
-  const issuer = String(env.CHRISTMAS_ACCESS_TEAM_DOMAIN || '').replace(/\\/$/, '');
+  const issuer = String(env.CHRISTMAS_ACCESS_TEAM_DOMAIN || '').replace(/\/$/, '');
   const audience = String(env.CHRISTMAS_ACCESS_AUD || '');
   if (!/^https:\/\/[a-z0-9-]+\.cloudflareaccess\.com$/i.test(issuer) || !audience) return null;
   return { issuer, audience };
@@ -97,7 +97,7 @@ export async function verifyAccessToken(token, env, fetcher = fetch) {
 function accessJwt(request) {
   const header = request.headers.get('Cf-Access-Jwt-Assertion');
   if (header) return header;
-  const match = /(?:^|;\\s*)CF_Authorization=([^;]+)/.exec(request.headers.get('Cookie') || '');
+  const match = /(?:^|;\s*)CF_Authorization=([^;]+)/.exec(request.headers.get('Cookie') || '');
   return match ? match[1] : '';
 }
 function parentAuthorized(request, env) {
