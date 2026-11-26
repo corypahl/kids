@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 import { ACTIVITIES, CHILDREN, TRIVIA } from './data';
 import type { ChildId, Tab } from './data';
-import { familyToday, readFamilyKey, requestApi, storeFamilyKey } from './api';
+import { familyToday, nativeChristmas, readFamilyKey, requestApi, storeFamilyKey } from './api';
 import type { VillageState, Wish } from './api';
 import { AdventCalendar, GlitterDiary, ParentWishes, SantaWishlist } from './Features';
 
@@ -282,6 +282,7 @@ function Home({ days, child, childId, completed, wishes, opened, ready, goTo, on
 }
 
 export default function App() {
+  const nativeApp = Boolean(nativeChristmas());
   const [tab, setTab] = useState<Tab>('home');
   const [child, setChild] = useState<ChildId>('emma');
   const [familyKey, setFamilyKey] = useState(readFamilyKey);
@@ -300,7 +301,7 @@ export default function App() {
 
   async function reload(profile: ChildId = child, key: string = familyKey) {
     const seq = ++sequence.current;
-    if (!key) { setStatus('needs-key'); return; }
+    if (!key) { setStatus(nativeApp ? 'error' : 'needs-key'); if (nativeApp) setError('This Android build is missing its family configuration. Ask a grown-up to install the signed testing release.'); return; }
     setStatus('loading');
     try {
       const value = await requestApi<VillageState>('state?child=' + profile, { key });
@@ -365,21 +366,23 @@ export default function App() {
       </nav>
       <main className="page-main" key={tab + child}>
         {!isReady && <div className="family-connect">
-          <h3>🔒 Connect the family’s Christmas storage</h3>
-          <p>Wish lists, Glitter’s photos and recordings, and daily progress are private and shared between devices.</p>
-          <form className="family-key-form" onSubmit={connect}>
+          <h3>{nativeApp ? '🎄 Loading Christmas Village' : '🔒 Connect the family’s Christmas storage'}</h3>
+          <p>{nativeApp ? 'Your wishes and Glitter’s Diary sync automatically in the Android app.' :
+            'Wish lists, Glitter’s photos and recordings, and daily progress are private and shared between devices.'}</p>
+          {!nativeApp && <form className="family-key-form" onSubmit={connect}>
             <label htmlFor="family-key">Family key</label>
             <input type="password" id="family-key" value={keyDraft} autoComplete="off"
               onChange={e => setKeyDraft(e.target.value)} placeholder="Family access key" />
             <button className="action" type="submit" disabled={!keyDraft.trim() || status === 'loading'}>
               {status === 'loading' ? 'Connecting…' : 'Connect'}
             </button>
-          </form>
-          {status === 'error' && <p className="form-error" role="alert">{error}</p>}
+          </form>}
+          {status === 'error' && <><p className="form-error" role="alert">{error}</p>
+            {nativeApp && <button className="action secondary" onClick={() => void reload()}>Try again</button>}</>}
           {status === 'loading' && <p role="status">Loading family data…</p>}
         </div>}
         {isReady && <div className="family-status"><span>☁️ Connected to your family lists</span>
-          <button className="pill" onClick={() => { storeFamilyKey(''); setFamilyKey(''); setKeyDraft(''); setStatus('needs-key'); }}>Change family key</button>
+          {!nativeApp && <button className="pill" onClick={() => { storeFamilyKey(''); setFamilyKey(''); setKeyDraft(''); setStatus('needs-key'); }}>Change family key</button>}
         </div>}
         {isReady && error && <p className="form-error" role="alert">{error}</p>}
         {tab === 'home' && <Home days={untilChristmas} child={active.name} childId={child}

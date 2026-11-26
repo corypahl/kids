@@ -1,0 +1,133 @@
+name: "Build/Publish: Christmas Village Android"
+
+on:
+  pull_request:
+    paths:
+      - 'apps/christmas/android/**'
+      - 'apps/christmas/src/**'
+      - '.github/workflows/christmas-android.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'apps/christmas/android/**'
+      - '.github/workflows/christmas-android.yml'
+  workflow_dispatch:
+    inputs:
+      publish_to_play:
+        description: "Build signed AAB and publish to Google Play Internal testing (main only)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: christmas-android-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  android:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set version
+        run: |
+          echo "ANDROID_VERSION_CODE=$((1000 + GITHUB_RUN_NUMBER))" >> "$GITHUB_ENV"
+          echo "ANDROID_VERSION_NAME=0.1.$GITHUB_RUN_NUMBER" >> "$GITHUB_ENV"
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22.13.0
+          cache: npm
+
+      - name: Install and verify web frontend
+        run: |
+          npm ci
+          npm run lint --workspace kids-christmas
+          npm run build --workspace kids-christmas
+
+      - name: Setup Java
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.13'
+
+      - name: Setup Android
+        uses: android-actions/setup-android@v4
+
+      - name: Install Android 16 SDK
+        run: sdkmanager 'platforms;android-36' 'build-tools;36.0.0'
+
+      - name: Verify Android tests and build debug APK
+        run: gradle -p apps/christmas/android :app:testDebugUnitTest :app:assembleDebug :app:bundleRelease --build-cache
+
+      - name: Verify package identity
+        run: |
+          apk=apps/christmas/android/app/build/outputs/apk/debug/app-debug.apk
+          test -s "$apk"
+          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging "$apk" | grep -E "^package: name='dev.corypahl.christmas'"
+          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging "$apk" | grep -E "targetSdkVersion:'36'"
+
+      - name: Upload debug APK (no family credential)
+        uses: actions/upload-artifact@v7
+        with:
+          name: christmas-android-debug-${{ github.run_number }}
+          path: apps/christmas/android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Validate Play and signing settings
+        if: github.event_name == 'workflow_dispatch' && inputs.publish_to_play && github.ref == 'refs/heads/main'
+        env:
+          ANDROID_CHRISTMAS_FAMILY_KEY: ${{ secrets.ANDROID_CHRISTMAS_FAMILY_KEY }}
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          GOOGLE_PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+        run: |
+          for name in ANDROID_CHRISTMAS_FAMILY_KEY ANDROID_KEYSTORE_BASE64 ANDROID_KEYSTORE_PASSWORD ANDROID_KEY_ALIAS ANDROID_KEY_PASSWORD GOOGLE_PLAY_SERVICE_ACCOUNT_JSON; do
+            if [[ -z "${!name}" ]]; then
+              echo "::error::$name must be added as a kids repo Actions secret before publishing."
+              exit 1
+            fi
+          done
+          python -c 'import json,os; o=json.loads(os.environ["GOOGLE_PLAY_SERVICE_ACCOUNT_JSON"]); assert o.get("type")=="service_account" and o.get("private_key"), "Expected service account JSON"'
+          printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/christmas-upload.jks"
+          chmod 600 "$RUNNER_TEMP/christmas-upload.jks"
+
+      - name: Build signed bundle for internal testing
+        if: github.event_name == 'workflow_dispatch' && inputs.publish_to_play && github.ref == 'refs/heads/main'
+        env:
+          ANDROID_CHRISTMAS_FAMILY_KEY: ${{ secrets.ANDROID_CHRISTMAS_FAMILY_KEY }}
+          ANDROID_RELEASE_STORE_FILE: ${{ runner.temp }}/christmas-upload.jks
+          ANDROID_RELEASE_STORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_RELEASE_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_RELEASE_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          gradle -p apps/christmas/android :app:bundleRelease :app:assembleRelease --build-cache
+          jarsigner -verify apps/christmas/android/app/build/outputs/bundle/release/app-release.aab
+
+      - name: Publish signed AAB to Google Play Internal testing
+        if: github.event_name == 'workflow_dispatch' && inputs.publish_to_play && github.ref == 'refs/heads/main'
+        uses: r0adkll/upload-google-play@e738b9dd8f2476ea806d921b64aacd24f34515a5
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: dev.corypahl.christmas
+          releaseFiles: apps/christmas/android/app/build/outputs/bundle/release/app-release.aab
+          tracks: internal
+          status: completed
+          releaseName: ${{ env.ANDROID_VERSION_NAME }}
+
+      - name: Delete temporary signing material
+        if: always()
+        run: rm -f "$RUNNER_TEMP/christmas-upload.jks"
