@@ -5,6 +5,7 @@ Monorepo for family and kids applications and supporting edge services.
 ## Repository layout
 
 - `apps/bedtime`: Bedtime Routine Spinner interactive checklist for Emma and Sophie.
+- `apps/christmas`: Christmas Village for Emma, Sophie, and Adam.
 - `services/gateway`: Cloudflare Worker routing `kids.corypahl.dev` to downstream applications via Service Bindings.
 - `docs/`: Architecture and migration documentation.
 
@@ -16,6 +17,7 @@ Each application is an independently deployable Cloudflare Worker project. The r
 | --- | --- | --- | --- |
 | `kids.corypahl.dev/` | `kids-gateway` | *(Internal)* | Kids portal hub with quick launch cards |
 | `kids.corypahl.dev/bedtime/*` | `kids-gateway` | `kids-bedtime` | Bedtime Routine Spinner app |
+| `kids.corypahl.dev/christmas/*` | `kids-gateway` | `kids-christmas` | Christmas Village games, activities, wish lists |
 
 ## Getting started
 

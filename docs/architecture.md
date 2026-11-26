@@ -1,6 +1,6 @@
 # Architecture
 
-The `kids` monorepo consolidates applications for Emma and Sophie under the unified public domain `kids.corypahl.dev`.
+The `kids` monorepo consolidates applications for Emma, Sophie, and Adam under the unified public domain `kids.corypahl.dev`.
 
 ```text
 apps/        Browser-facing applications (bedtime, etc.)
@@ -16,6 +16,7 @@ Every application and service is an independent deployment target.
 
 - `services/gateway`: Deployed as Cloudflare Worker `kids-gateway`. Owns the public `kids.corypahl.dev` Custom Domain. Routes requests to downstream Workers through Cloudflare Service Bindings without extra network hops.
 - `apps/bedtime`: Deployed as Cloudflare Worker `kids-bedtime` with Static Assets (`dist`).
+- `apps/christmas`: Deployed as Cloudflare Worker `kids-christmas` with Static Assets (`dist`), using browser-local storage for wish lists.
 
 ```mermaid
 flowchart TD
@@ -23,6 +24,8 @@ flowchart TD
     Gateway -- "/" --> Hub["Kids Portal Hub"]
     Gateway -- "/bedtime/*" --> BedtimeWorker["kids-bedtime Worker<br/>(Service Binding: BEDTIME)"]
     BedtimeWorker --> BedtimeAssets["dist (Static Assets SPA)"]
+    Gateway -- "/christmas/*" --> ChristmasWorker["kids-christmas Worker (Service Binding: CHRISTMAS)"]
+    ChristmasWorker --> ChristmasAssets["dist (Static Assets SPA)"]
 ```
 
 ## Routing & Service Bindings
@@ -32,5 +35,7 @@ flowchart TD
 | `/` | *(Internal)* | — | Renders the kids portal hub landing page |
 | `/bedtime` | — | — | Redirects 308 to `/bedtime/` |
 | `/bedtime/*` | `BEDTIME` | `kids-bedtime` | Slices `/bedtime` prefix and forwards to `BEDTIME` binding |
+| `/christmas` | — | — | Redirects 308 to `/christmas/` |
+| `/christmas/*` | `CHRISTMAS` | `kids-christmas` | Slices `/christmas` prefix and forwards to `CHRISTMAS` binding |
 
 Requests forwarded through Service Bindings preserve request headers, query strings, and HTTP methods. The gateway does not handle application logic or rendering beyond the landing hub.

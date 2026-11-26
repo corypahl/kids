@@ -7,6 +7,7 @@ import worker from "../src/index.js";
 
 const routeCases = [
   ["bedtime", "BEDTIME"],
+  ["christmas", "CHRISTMAS"],
 ];
 
 describe("kids gateway", () => {
@@ -15,6 +16,7 @@ describe("kids gateway", () => {
     const config = JSON.parse(readFileSync(configPath, "utf8"));
     assert.deepEqual(config.services, [
       { binding: "BEDTIME", service: "kids-bedtime" },
+      { binding: "CHRISTMAS", service: "kids-christmas" },
     ]);
   });
 
@@ -25,6 +27,8 @@ describe("kids gateway", () => {
     const html = await response.text();
     assert.match(html, /Kids Hub/);
     assert.match(html, /Bedtime Routine/);
+    assert.match(html, /Christmas Village/);
+    assert.match(html, /href="\/christmas\/"/);
     assert.match(html, /href="\/bedtime\/"/);
   });
 

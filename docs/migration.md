@@ -15,8 +15,9 @@ The source repositories were imported without squashing using `git subtree add` 
 2. **Workers**:
    Deploy the downstream Worker first:
    - `kids-bedtime` (from `apps/bedtime`)
+   - `kids-christmas` (from `apps/christmas`)
 3. **Gateway Deployment**:
-   Deploy `kids-gateway` (from `services/gateway`). Its `wrangler.jsonc` automatically configures the `BEDTIME` Service Binding.
+   Deploy `kids-gateway` (from `services/gateway`). Its `wrangler.jsonc` automatically configures the `BEDTIME` and `CHRISTMAS` Service Bindings.
 4. **Custom Domain**:
    In the Cloudflare Dashboard:
    - Go to Worker `kids-gateway` > **Settings** > **Domains & Routes** > **Custom Domains**.
