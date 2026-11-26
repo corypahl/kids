@@ -3,7 +3,7 @@ import type { FormEvent } from 'react';
 import { CHILDREN, WISH_IDEAS } from './data';
 import type { ChildId, Tab } from './data';
 import { familyToday, getMedia, nativeChristmas, requestApi } from './api';
-import type { DiaryEntry, ParentWish, Wish } from './api';
+import type { DiaryEntry, Wish } from './api';
 
 type SpeechResult = { results: ArrayLike<ArrayLike<{ transcript: string }>> };
 type SpeechEngine = {
@@ -369,39 +369,3 @@ export function GlitterDiary({ child, ready }: { child: ChildId; ready: boolean 
   );
 }
 
-export function ParentWishes() {
-  const [key, setKey] = useState('');
-  const [wishes, setWishes] = useState<ParentWish[] | null>(null);
-  const [error, setError] = useState('');
-  async function load() {
-    try {
-      const result = await requestApi<{ wishes: ParentWish[] }>('parent/wishes', { parentKey: key });
-      setWishes(result.wishes); setError('');
-    } catch (e) { setWishes(null); setError(e instanceof Error ? e.message : 'Parent access failed.'); }
-  }
-  async function toggle(wish: ParentWish) {
-    try {
-      await requestApi('parent/wishes/' + wish.id, { method: 'PATCH', parentKey: key, body: { purchased: !wish.purchased } });
-      await load();
-    } catch (e) { setError(e instanceof Error ? e.message : 'Could not update gift.'); }
-  }
-  return <section className="parent-section">
-    <div className="content-heading"><span className="eyebrow">FOR GROWN-UPS ONLY</span><h2>Santa’s gift tracker</h2>
-      <p>Gift purchase marks never appear in the children’s wish lists.</p></div>
-    <div className="wish-list-card parent-panel">
-      <label className="field-label" htmlFor="parent-key">Private parent key</label>
-      <div className="parent-key-row"><input id="parent-key" type="password" value={key} onChange={e => setKey(e.target.value)}
-        placeholder="Enter the separate parent key" autoComplete="off" />
-        <button className="action" disabled={!key} onClick={load}>Unlock</button></div>
-      {error && <p className="form-error" role="alert">{error}</p>}
-      {wishes && CHILDREN.map(child => <div key={child.id} className="parent-group">
-        <h3>{child.icon} {child.name}</h3>
-        {wishes.filter(w => w.child === child.id).length === 0 && <p>No wishes yet.</p>}
-        {wishes.filter(w => w.child === child.id).map(wish => <label key={wish.id} className="parent-wish">
-          <input type="checkbox" checked={wish.purchased} onChange={() => void toggle(wish)} />
-          <span>{wish.icon} {wish.name}{wish.favorite ? ' ⭐' : ''}</span><small>{wish.purchased ? 'Purchased' : 'Not purchased'}</small>
-        </label>)}
-      </div>)}
-    </div>
-  </section>;
-}
