@@ -5,11 +5,20 @@ export type VillageState = { wishes: Wish[]; completed: number[]; opened: number
 export type DiaryEntry = { id: string; child: ChildId; day: string; note: string; hasPhoto: boolean; hasAudio: boolean };
 export type ParentWish = Wish & { child: ChildId; purchased: boolean };
 
+export type ChristmasAndroidBridge = { familyKey(): string; dictateWish(): void };
+export function nativeChristmas(): ChristmasAndroidBridge | undefined {
+  return (window as unknown as { ChristmasAndroid?: ChristmasAndroidBridge }).ChristmasAndroid;
+}
 const FAMILY_KEY = 'christmas-village-family-key';
 export function readFamilyKey() {
+  const native = nativeChristmas();
+  if (native) {
+    try { return native.familyKey(); } catch { return ''; }
+  }
   try { return localStorage.getItem(FAMILY_KEY) || ''; } catch { return ''; }
 }
 export function storeFamilyKey(value: string) {
+  if (nativeChristmas()) return; // Native builds have their key set during CI; never ask children to type it.
   try {
     if (value) localStorage.setItem(FAMILY_KEY, value);
     else localStorage.removeItem(FAMILY_KEY);
