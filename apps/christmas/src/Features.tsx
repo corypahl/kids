@@ -175,7 +175,7 @@ export function AdventCalendar({ child, opened, onOpen, goTo, enabled }: {
         })}
       </div>
       {error && <p className="form-error" role="alert">{error}</p>}
-      {!enabled && <p className="storage-note">Connect your family storage to track the surprises you’ve opened.</p>}
+      {!enabled && <p className="storage-note">Your daily progress will appear when your private family data is available.</p>}
       {selected !== null && <div className="surprise-overlay" role="dialog" aria-modal="true" aria-label="Daily Christmas surprise">
         <div className="surprise-panel">
           <button className="close-surprise" onClick={() => setSelected(null)} aria-label="Close surprise">×</button>
