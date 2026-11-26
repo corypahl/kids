@@ -71,7 +71,7 @@ export function SantaWishlist({ child, wishes, onAdd, onFavorite, onRemove }: {
       </div>
       <div className="wishlist-layout">
         <div className="wishlist-form-card">
-          <div className="santa-portrait" role="img" aria-label="Smiling Santa Claus">🎅</div>
+          <img className="santa-portrait" src="./santa.svg" alt="Smiling Santa Claus" />
           <h3>Dear Santa…</h3><p>What would you love for Christmas?</p>
           <form onSubmit={submit}>
             <label htmlFor="wish-name">My Christmas wish</label>

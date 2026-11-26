@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="280" height="280" viewBox="0 0 280 280" role="img" aria-labelledby="title">
+<title>Friendly Santa Claus</title><defs><radialGradient id="bg"><stop stop-color="#f8f4df"/><stop offset="1" stop-color="#b4dfd1"/></radialGradient></defs>
+<rect width="280" height="280" rx="140" fill="url(#bg)"/>
+<path d="M62 110C66 52 102 20 159 16c23 10 47 34 54 79l-151 15z" fill="#cb4039"/>
+<circle cx="210" cy="86" r="26" fill="#fffdf5"/>
+<path d="M63 111c15-18 137-20 148-5" fill="none" stroke="#fffefa" stroke-width="27" stroke-linecap="round"/>
+<path d="M65 167c-9 52 28 103 75 108 56 6 94-51 74-107" fill="#fffdfa"/>
+<ellipse cx="139" cy="147" rx="72" ry="72" fill="#efba9b"/>
+<ellipse cx="105" cy="144" rx="7" ry="9" fill="#254a43"/><ellipse cx="175" cy="144" rx="7" ry="9" fill="#254a43"/>
+<path d="M92 127q13-9 27-2m47 1q13-7 25 1" fill="none" stroke="#fdfdfb" stroke-width="11" stroke-linecap="round"/>
+<circle cx="82" cy="169" r="14" fill="#e99687" opacity=".6"/><circle cx="196" cy="169" r="14" fill="#e99687" opacity=".6"/>
+<path d="M74 178q-20 49 24 76 40 28 82 5 43-22 28-78-31 13-57-5-21-13-40 3-19 10-37-1" fill="#fffefd"/>
+<path d="M102 182c16-12 31-14 39-2 16-12 30-10 42 1" fill="none" stroke="#fff" stroke-width="17" stroke-linecap="round"/>
+<ellipse cx="139" cy="174" rx="18" ry="13" fill="#e89a8a"/>
+<path d="M122 210q17 18 35 0" stroke="#a74442" stroke-width="7" fill="none" stroke-linecap="round"/>
+<path d="M119 238q21 17 43 0" stroke="#e5e8e2" stroke-width="10" fill="none" stroke-linecap="round"/></svg>
