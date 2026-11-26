@@ -36,3 +36,46 @@ h1,h2,h3,h4,p{margin-top:0}h1,h2,h3,h4{font-family:'Baloo 2',system-ui,sans-seri
 @media(max-width:900px){.site-header{flex-wrap:wrap}.hero{grid-template-columns:1fr .45fr;min-height:360px}.tree-art{font-size:8rem}.activity-grid{grid-template-columns:repeat(3,1fr)}.wishlist-layout{grid-template-columns:1fr}}
 @media(max-width:650px){.site-header{padding:17px 14px 12px;gap:14px}.brand{font-size:1.24rem}.brand-icon{font-size:2rem}.profile-chooser{width:100%;justify-content:space-between;gap:7px}.profile-chooser>span{font-size:.72rem}.profile{font-size:.77rem;padding:6px 8px}.main-nav{margin:0 12px 15px;border-radius:17px;gap:0}.nav-item{padding:9px 2px;gap:2px;flex-direction:column;font-size:.7rem;border-radius:12px}.nav-item span{font-size:1.3rem}.page-main{padding:0 12px 34px}.hero{display:block;min-height:0;padding:30px 22px;border-radius:23px}.hero h1{font-size:2.7rem}.hero-art{display:none}.home-title{margin:26px 0 12px}.home-cards{grid-template-columns:1fr;gap:10px}.home-card{min-height:0;padding:18px}.home-card>span{font-size:2.7rem}.content-heading{margin:24px auto}.game-picker{gap:6px}.game-tile{padding:10px 3px}.game-tile-icon{font-size:1.6rem}.game-tile strong{font-size:.74rem}.game-tile small{display:none}.game-panel{padding:17px;border-radius:20px}.game-panel h3{font-size:1.2rem}.game-panel .section-row{align-items:start}.stat-chip{font-size:.7rem;padding:9px}.memory-grid{gap:7px}.memory-card{font-size:2rem;border-width:2px;border-radius:12px}.activity-grid{grid-template-columns:repeat(2,1fr);gap:9px}.activity-card{padding:12px;min-height:223px}.activity-card strong{font-size:1rem}.activity-card small{font-size:.73rem}.wishlist-form-card,.wish-list-card{padding:19px}.icon-picker{grid-template-columns:repeat(4,1fr)}.feedback{flex-direction:column;align-items:stretch}.site-footer{padding:20px 15px;flex-direction:column}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{transition:none!important}}
+
+
+/* Christmas countdown, shared wish lists, Glitter diary, and parent tools */
+.main-nav{max-width:1050px;grid-template-columns:repeat(6,minmax(0,1fr))}
+.home-cards{grid-template-columns:repeat(4,minmax(0,1fr))}
+.diary-home{background:#fceff2}
+.advent-section{background:#fff;border:1px solid #e6e6dc;border-radius:26px;margin:22px 0;padding:25px;box-shadow:0 8px 24px #244b3410}
+.advent-section h2{margin:0 0 5px;color:#195543}.advent-section p{margin:0}
+.advent-bell{font-size:3.5rem}
+.advent-grid{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:10px;margin:20px 0 5px}
+.advent-door{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;aspect-ratio:1;background:linear-gradient(135deg,#fff2dc,#fce0b5);border:2px solid #e5bf8a;border-radius:14px;color:#73502d;box-shadow:0 3px 0 #d3b182}
+.advent-door:disabled{opacity:.52;filter:grayscale(.25)}
+.advent-door:not(:disabled):hover{transform:translateY(-2px)}
+.advent-door.opened{background:#e8f5e8;border-color:#81b58f;color:#23654a}
+.door-number{font:900 1.1rem 'Baloo 2',sans-serif}.door-icon{font-size:1.8rem}
+.surprise-overlay{position:fixed;inset:0;z-index:10;background:#142c25c9;display:grid;place-items:center;padding:15px}
+.surprise-panel{position:relative;width:min(460px,100%);background:#fffaf0;border:7px solid #f4dec0;border-radius:25px;padding:35px 24px;text-align:center;box-shadow:0 20px 80px #0005}
+.surprise-panel h3{font-size:2rem;color:#194d3b;margin:10px 0}.surprise-panel p{font-size:1.1rem}.surprise-emoji{font-size:5.3rem}
+.surprise-panel .action{margin:10px}.close-surprise{position:absolute;top:8px;right:12px;background:transparent;border:0;font-size:2rem;color:#856d54}
+.santa-portrait{display:grid;place-items:center;width:140px;height:140px;margin:-5px auto 16px;border-radius:50%;border:8px solid #fff1cf;background:radial-gradient(circle at top,#b5e2ef,#e1f5f1);font-size:6rem;box-shadow:0 10px 30px #33705a24}
+.voice-input{display:flex;align-items:stretch;gap:8px}.voice-input input{flex:1;min-width:0}
+.mic-button{flex:0 0 60px;min-height:58px;border:0;border-radius:13px;background:#d3f0e0;font-size:1.9rem}.mic-button.recording,.recording{background:#c94c43!important;color:#fff!important}
+.diary-layout{display:grid;grid-template-columns:.85fr 1.15fr;gap:20px;align-items:start}
+.diary-section input[type=file],.diary-section textarea,.diary-section .diary-date{width:100%;padding:12px;border-radius:12px;border:2px solid #dce7d9;background:#f9fbf7;font:inherit}
+.diary-section input[type=file]{font-size:.9rem}.diary-section select{border:1px solid #dae5d8;border-radius:10px;padding:8px;background:#fff}
+.diary-photo{display:block;width:100%;max-height:320px;object-fit:contain;border-radius:15px;background:#f3f5eb;margin:12px 0}
+.diary-section audio{display:block;width:100%;margin:13px 0}
+.record-controls{display:flex;flex-wrap:wrap;align-items:center;gap:10px}.record-controls small{color:#79877b}
+.diary-day-list{display:flex;flex-wrap:wrap;gap:5px;margin:15px 0}.diary-day-title{margin:20px 0}
+.diary-entries{display:grid;gap:12px}.diary-entry{background:#f8faf5;border:1px solid #e0e7da;border-radius:15px;padding:17px}
+.diary-entry h4{font-size:1.2rem;margin:0 0 10px}.diary-entry p{margin:0 0 9px}.media-loading{font-size:.8rem;color:#6b7c70}
+.parent-panel{max-width:750px;margin:auto}.parent-key-row,.family-key-form{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.parent-key-row input,.family-key-form input{flex:1;min-width:175px;padding:12px 15px;background:#fff;border:2px solid #d4e3d9;border-radius:12px}
+.parent-group{border-top:1px solid #dce6db;margin-top:25px;padding-top:15px}
+.parent-wish{display:flex;align-items:center;gap:14px;padding:10px;border-bottom:1px solid #ecf0e9}
+.parent-wish input{height:22px;width:22px}.parent-wish span{flex:1;font-weight:800}.parent-wish small{color:#687c6f}
+.family-connect{background:#fff4e2;border:1px solid #e6cfa4;padding:19px 24px;border-radius:18px;margin:0 0 19px}
+.family-connect h3{font-size:1.15rem;margin:0 0 8px}.family-connect p{margin-bottom:12px}
+.family-key-form label{font-weight:900}.family-connect .form-error{margin:12px 0 0}
+@media(max-width:1000px){.home-cards{grid-template-columns:repeat(2,minmax(0,1fr))}.advent-grid{grid-template-columns:repeat(6,minmax(0,1fr))}.diary-layout{grid-template-columns:1fr}}
+@media(max-width:650px){.main-nav{grid-template-columns:repeat(3,minmax(0,1fr));gap:3px}.home-cards{grid-template-columns:1fr}.advent-section{padding:17px 12px;border-radius:18px}
+.advent-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}.advent-door{border-radius:11px}.door-icon{font-size:1.4rem}
+.advent-bell{font-size:2.5rem}.family-key-form{align-items:stretch;flex-direction:column}.family-key-form input,.family-key-form button{width:100%}.parent-key-row{align-items:stretch}}

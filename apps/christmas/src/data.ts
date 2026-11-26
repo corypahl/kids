@@ -1,5 +1,5 @@
 export type ChildId = 'emma' | 'sophie' | 'adam';
-export type Tab = 'home' | 'games' | 'activities' | 'wishlist';
+export type Tab = 'home' | 'games' | 'activities' | 'wishlist' | 'diary' | 'parent';
 
 export const CHILDREN: { id: ChildId; name: string; icon: string; color: string }[] = [
   { id: 'emma', name: 'Emma', icon: '🦌', color: 'pink' },
