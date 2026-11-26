@@ -1,0 +1,65 @@
+name: "Build/Deploy: Kids Christmas"
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/christmas/**'
+      - 'services/gateway/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/build-christmas.yml'
+  pull_request:
+    paths:
+      - 'apps/christmas/**'
+      - 'services/gateway/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/build-christmas.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-christmas-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22.13.0
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type-check Christmas app
+        run: npm run lint --workspace kids-christmas
+
+      - name: Test Christmas worker
+        run: npm test --workspace kids-christmas
+
+      - name: Build Christmas app
+        run: npm run build --workspace kids-christmas
+
+      - name: Deploy kids-christmas Worker
+        if: github.event_name != 'pull_request'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: npx wrangler deploy --config apps/christmas/wrangler.jsonc
+
+      - name: Deploy kids-gateway after Christmas Worker
+        if: github.event_name != 'pull_request'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: npx wrangler deploy --config services/gateway/wrangler.jsonc

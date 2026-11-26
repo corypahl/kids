@@ -11,7 +11,8 @@
     "build:bedtime": "npm run build --workspace kids-bedtime",
     "build:gateway": "npm run build --workspace kids-gateway",
     "lint": "npm run lint --workspaces --if-present",
-    "test": "npm run test --workspaces --if-present"
+    "test": "npm run test --workspaces --if-present",
+    "build:christmas": "npm run build --workspace kids-christmas"
   },
   "engines": {
     "node": ">=22.13.0"

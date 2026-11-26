@@ -1,5 +1,6 @@
 const ROUTES = [
   { prefix: "/bedtime", binding: "BEDTIME" },
+  { prefix: "/christmas", binding: "CHRISTMAS" },
 ];
 
 function findRoute(pathname) {
@@ -152,10 +153,16 @@ function renderPortalHtml() {
   <header>
     <span class="badge">Family Monorepo Portal</span>
     <h1>Kids Hub</h1>
-    <p class="subtitle">Playful apps and daily routines for Emma and Sophie.</p>
+    <p class="subtitle">Playful games and daily routines for Emma, Sophie, and Adam.</p>
   </header>
   <main>
     <div class="grid">
+      <a class="card" href="/christmas/">
+        <div class="card-icon">🎄</div>
+        <h2>Christmas Village <span aria-hidden="true">&rarr;</span></h2>
+        <p>Holiday games, 24 Christmas activities, and personal Santa wish lists for Emma, Sophie, and Adam.</p>
+        <span class="card-link">Enter Village &rarr;</span>
+      </a>
       <a class="card" href="/bedtime/">
         <div class="card-icon">🌙</div>
         <h2>Bedtime Routine <span aria-hidden="true">&rarr;</span></h2>
