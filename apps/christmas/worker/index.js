@@ -35,8 +35,70 @@ function validDiaryDate(s) {
   const now = todayParts();
   return s <= [now.year, String(now.month).padStart(2, '0'), String(now.day).padStart(2, '0')].join('-');
 }
-function familyAuthorized(request, env) {
-  return !!env.CHRISTMAS_FAMILY_KEY && request.headers.get('X-Family-Key') === env.CHRISTMAS_FAMILY_KEY;
+// Cloudflare Access authenticates the family once. Verify its signed JWT here too,
+// so direct workers.dev URLs and forged identity headers cannot bypass protection.
+const tokenDecoder = new TextDecoder();
+let cachedJwks = { issuer: '', until: 0, keys: [] };
+
+function decodeBase64Url(value) {
+  if (!/^[A-Za-z0-9_-]+$/.test(value)) throw new Error('Bad token encoding');
+  const normalized = value.replace(/-/g, '+').replace(/_/g, '/');
+  const bytes = atob(normalized + '='.repeat((4 - normalized.length % 4) % 4));
+  return Uint8Array.from(bytes, char => char.charCodeAt(0));
+}
+
+function accessConfiguration(env) {
+  const issuer = String(env.CHRISTMAS_ACCESS_TEAM_DOMAIN || '').replace(/\\/$/, '');
+  const audience = String(env.CHRISTMAS_ACCESS_AUD || '');
+  if (!/^https:\/\/[a-z0-9-]+\.cloudflareaccess\.com$/i.test(issuer) || !audience) return null;
+  return { issuer, audience };
+}
+
+export async function verifyAccessToken(token, env, fetcher = fetch) {
+  const config = accessConfiguration(env);
+  if (!config || typeof token !== 'string' || token.length < 100 || token.length > 12000) return false;
+  try {
+    const segments = token.split('.');
+    if (segments.length !== 3) return false;
+    const header = JSON.parse(tokenDecoder.decode(decodeBase64Url(segments[0])));
+    const payload = JSON.parse(tokenDecoder.decode(decodeBase64Url(segments[1])));
+    const now = Math.floor(Date.now() / 1000);
+    if (header.alg !== 'RS256' || typeof header.kid !== 'string' || !header.kid ||
+      payload.iss !== config.issuer ||
+      !(Array.isArray(payload.aud) ? payload.aud.includes(config.audience) : payload.aud === config.audience) ||
+      !Number.isFinite(payload.exp) || payload.exp <= now ||
+      (payload.nbf !== undefined && (!Number.isFinite(payload.nbf) || payload.nbf > now + 30)) ||
+      (payload.iat !== undefined && (!Number.isFinite(payload.iat) || payload.iat > now + 30))) return false;
+    if (cachedJwks.issuer !== config.issuer || cachedJwks.until < Date.now()) {
+      const certs = await fetcher(config.issuer + '/cdn-cgi/access/certs', { redirect: 'error' });
+      if (!certs.ok) return false;
+      const data = await certs.json();
+      if (!Array.isArray(data.keys)) return false;
+      cachedJwks = { issuer: config.issuer, until: Date.now() + 300000, keys: data.keys };
+    }
+    let jwk = cachedJwks.keys.find(key => key.kid === header.kid && key.kty === 'RSA');
+    if (!jwk) {
+      cachedJwks.until = 0;
+      const certs = await fetcher(config.issuer + '/cdn-cgi/access/certs', { redirect: 'error' });
+      if (!certs.ok) return false;
+      const data = await certs.json();
+      if (!Array.isArray(data.keys)) return false;
+      cachedJwks = { issuer: config.issuer, until: Date.now() + 300000, keys: data.keys };
+      jwk = cachedJwks.keys.find(key => key.kid === header.kid && key.kty === 'RSA');
+    }
+    if (!jwk) return false;
+    const publicKey = await crypto.subtle.importKey('jwk', jwk, { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' }, false, ['verify']);
+    return crypto.subtle.verify('RSASSA-PKCS1-v1_5', publicKey, decodeBase64Url(segments[2]), new TextEncoder().encode(segments[0] + '.' + segments[1]));
+  } catch {
+    return false;
+  }
+}
+
+function accessJwt(request) {
+  const header = request.headers.get('Cf-Access-Jwt-Assertion');
+  if (header) return header;
+  const match = /(?:^|;\\s*)CF_Authorization=([^;]+)/.exec(request.headers.get('Cookie') || '');
+  return match ? match[1] : '';
 }
 function parentAuthorized(request, env) {
   return !!env.CHRISTMAS_PARENT_KEY && request.headers.get('X-Parent-Key') === env.CHRISTMAS_PARENT_KEY;
@@ -49,9 +111,10 @@ function fileOk(file, allowed, maxBytes) {
 }
 const mediaSuffix = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp', 'image/heic': 'heic', 'audio/webm': 'webm', 'audio/mp4': 'm4a', 'audio/ogg': 'ogg', 'audio/mpeg': 'mp3', 'audio/aac': 'aac', 'audio/3gpp': '3gp' };
 async function api(request, env, pathname, url) {
-  // Never expose family data, recordings, or parent shopping state without a configured key.
-  if (!env.CHRISTMAS_FAMILY_KEY || !env.DB) return fail('Family storage has not been configured yet.', 503);
-  if (!familyAuthorized(request, env)) return fail('Family key required or incorrect.', 401);
+  // D1 data and private R2 media are only accessible with a valid Access application JWT.
+  if (!env.DB) return fail('Family storage has not been configured yet.', 503);
+  if (!accessConfiguration(env)) return fail('Cloudflare Access is not configured for Christmas Village.', 503);
+  if (!await verifyAccessToken(accessJwt(request), env)) return fail('Please sign in through Cloudflare Access.', 401);
   if (request.method !== 'GET' && request.headers.get('Origin') && new URL(request.headers.get('Origin')).origin !== url.origin) {
     return fail('Invalid request origin.', 403);
   }
