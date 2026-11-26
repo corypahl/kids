@@ -5,6 +5,8 @@ import type { ChildId, Tab } from './data';
 import { familyToday, nativeChristmas, readFamilyKey, requestApi, storeFamilyKey } from './api';
 import type { VillageState, Wish } from './api';
 import { AdventCalendar, GlitterDiary, SantaWishlist } from './Features';
+import { CookieBakery, ReindeerBarn, VillageHome } from './Village';
+import type { VillageDestination } from './Village';
 
 const TABS: { id: Tab; label: string; icon: string }[] = [
   { id: 'home', label: 'Village', icon: '🏠' },
@@ -217,8 +219,11 @@ function Games() {
   );
 }
 
-function Activities({ child, completed, toggle }: { child: string; completed: number[]; toggle: (id: number) => void }) {
-  const [category, setCategory] = useState('All');
+function Activities({ child, completed, toggle, initialCategory }: {
+  child: string; completed: number[]; toggle: (id: number) => void;
+  initialCategory: 'All' | 'Create' | 'Play' | 'Kindness' | 'Family';
+}) {
+  const [category, setCategory] = useState(initialCategory);
   const list = category === 'All' ? ACTIVITIES : ACTIVITIES.filter(item => item.category === category);
   return (
     <section>
@@ -229,7 +234,7 @@ function Activities({ child, completed, toggle }: { child: string; completed: nu
         <small>Complete all 24 for a full Christmas calendar!</small>
       </div>
       <div className="filter-row" aria-label="Filter activities">
-        {['All', 'Create', 'Play', 'Kindness', 'Family'].map(c => (
+        {(['All', 'Create', 'Play', 'Kindness', 'Family'] as const).map(c => (
           <button key={c} className={'pill ' + (category === c ? 'selected' : '')} onClick={() => setCategory(c)}>{c}</button>
         ))}
       </div>
@@ -249,40 +254,26 @@ function Activities({ child, completed, toggle }: { child: string; completed: nu
   );
 }
 
-function Home({ days, child, childId, completed, wishes, opened, ready, goTo, onOpen }: {
+function Home({ days, child, childId, completed, wishes, opened, ready, onVisit, onOpen }: {
   days: number; child: string; childId: ChildId; completed: number; wishes: number;
-  opened: number[]; ready: boolean; goTo: (tab: Tab) => void; onOpen: (day: number) => Promise<void>;
+  opened: number[]; ready: boolean;
+  onVisit: (destination: VillageDestination) => void;
+  onOpen: (day: number) => Promise<void>;
 }) {
-  return (
-    <section>
-      <div className="hero">
-        <div className="hero-copy">
-          <span className="eyebrow">WELCOME TO CHRISTMAS VILLAGE</span>
-          <h1>Christmas magic<br /><em>starts here!</em></h1>
-          <p>Games, daily surprises, Santa’s wishes, and Glitter’s adventures.</p>
-          <div className="countdown"><span className="countdown-icon">🎅</span>
-            <span><strong>{days === 0 ? 'Merry Christmas!' : days + ' days'}</strong>
-              <small>{days === 0 ? 'Have a wonderful day!' : 'until Christmas Day'}</small></span>
-          </div>
-          <button className="action light" onClick={() => goTo('wishlist')}>🎁 Tell Santa a wish →</button>
-        </div>
-        <div className="hero-art" aria-hidden="true"><div className="moon">✦</div><div className="tree-art">🎄</div><div className="gift-art">🎁 🧸 🎁</div></div>
-      </div>
-      <AdventCalendar child={childId} opened={opened} onOpen={onOpen} goTo={goTo} enabled={ready} />
-      <div className="section-row home-title"><div><span className="eyebrow">EXPLORE THE VILLAGE</span><h2>What shall we do today?</h2></div></div>
-      <div className="home-cards">
-        <button className="home-card games-home" onClick={() => goTo('games')}><span>🎮</span><strong>Christmas Games</strong><small>Matching, counting, and quizzes</small><b>Play now →</b></button>
-        <button className="home-card activities-home" onClick={() => goTo('activities')}><span>⭐</span><strong>Fun Activities</strong><small>{child} finished {completed} of 24 adventures</small><b>Try an activity →</b></button>
-        <button className="home-card wishlist-home" onClick={() => goTo('wishlist')}><span>🎅</span><strong>Santa’s Wish List</strong><small>{wishes === 0 ? 'Make your Christmas wishes' : child + ' has ' + wishes + ' wishes!'}</small><b>See wishes →</b></button>
-        <button className="home-card diary-home" onClick={() => goTo('diary')}><span>📸</span><strong>Glitter’s Diary</strong><small>Photos, little voices, and daily Elf on the Shelf memories</small><b>Visit Glitter →</b></button>
-      </div>
-    </section>
-  );
+  return <section className="village-experience">
+    <VillageHome child={child} days={days} completed={completed} wishes={wishes}
+      onVisit={onVisit} onAdvent={() => document.getElementById('christmas-advent')?.scrollIntoView({ behavior: 'smooth', block: 'start' })} />
+    <div id="christmas-advent">
+      <AdventCalendar child={childId} opened={opened} onOpen={onOpen}
+        goTo={tab => onVisit({ tab })} enabled={ready} />
+    </div>
+  </section>;
 }
 
 export default function App() {
   const nativeApp = Boolean(nativeChristmas());
   const [tab, setTab] = useState<Tab>('home');
+  const [activityCategory, setActivityCategory] = useState<'All' | 'Create' | 'Play' | 'Kindness' | 'Family'>('All');
   const [child, setChild] = useState<ChildId>('emma');
   const [familyKey, setFamilyKey] = useState(readFamilyKey);
   const [keyDraft, setKeyDraft] = useState(familyKey);
@@ -296,6 +287,8 @@ export default function App() {
     const interval = setInterval(() => setClockTick(value => value + 1), 60000);
     return () => clearInterval(interval);
   }, []);
+  // Switching buildings should show each destination from its beginning.
+  useEffect(() => { window.scrollTo(0, 0); }, [tab]);
   const active = CHILDREN.find(item => item.id === child)!;
 
   async function reload(profile: ChildId = child, key: string = familyKey) {
@@ -339,6 +332,10 @@ export default function App() {
     await requestApi('advent', { method: 'POST', body: { child, day } });
     await reload(child);
   }
+  const visit = (destination: VillageDestination) => {
+    if (destination.tab === 'activities') setActivityCategory(destination.category || 'All');
+    setTab(destination.tab);
+  };
   const isReady = status === 'ready';
   const untilChristmas = daysTillChristmas();
   return (
@@ -356,14 +353,15 @@ export default function App() {
           </div>
         </div>
       </header>
-      <nav className="main-nav" aria-label="Christmas Village sections">
-        {TABS.map(item => <button key={item.id} onClick={() => setTab(item.id)}
+      <nav className={'main-nav ' + (tab === 'home' ? 'village-nav' : '')} aria-label="Quick links around Christmas Village">
+        {TABS.map(item => <button key={item.id} onClick={() => visit({ tab: item.id })}
           className={tab === item.id ? 'nav-item active' : 'nav-item'}
           aria-current={tab === item.id ? 'page' : undefined}>
           <span>{item.icon}</span>{item.label}
         </button>)}
       </nav>
       <main className="page-main" key={tab + child}>
+        {tab !== 'home' && <button type="button" className="village-back" onClick={() => setTab('home')}>← Back to the village</button>}
         {!isReady && <div className="family-connect">
           <h3>{nativeApp ? '🎄 Loading Christmas Village' : '🔒 Connect the family’s Christmas storage'}</h3>
           <p>{nativeApp ? 'Your wishes and Glitter’s Diary sync automatically in the Android app.' :
@@ -386,13 +384,15 @@ export default function App() {
         {isReady && error && <p className="form-error" role="alert">{error}</p>}
         {tab === 'home' && <Home days={untilChristmas} child={active.name} childId={child}
           completed={state.completed.length} wishes={state.wishes.length} opened={state.opened}
-          ready={isReady} goTo={setTab} onOpen={openAdvent} />}
+          ready={isReady} onVisit={visit} onOpen={openAdvent} />}
         {tab === 'games' && <Games />}
         {tab === 'activities' && isReady && <Activities child={active.name} completed={state.completed}
-          toggle={id => void toggleActivity(id)} />}
+          toggle={id => void toggleActivity(id)} initialCategory={activityCategory} />}
         {tab === 'wishlist' && isReady && <SantaWishlist child={active.name} wishes={state.wishes}
           onAdd={addWish} onFavorite={wish => changeWish(wish)} onRemove={wish => changeWish(wish, true)} />}
         {tab === 'diary' && isReady && <GlitterDiary child={child} ready={isReady} />}
+        {tab === 'bakery' && <CookieBakery />}
+        {tab === 'reindeer' && <ReindeerBarn />}
       </main>
       <footer className="site-footer"><span>✨ Made for little Christmas helpers ✨</span><a href="/">← Back to Kids Hub</a></footer>
     </div>
