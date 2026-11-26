@@ -234,7 +234,7 @@ function Activities({ child, completed, toggle, initialCategory }: {
         <small>Complete all 24 for a full Christmas calendar!</small>
       </div>
       <div className="filter-row" aria-label="Filter activities">
-        {['All', 'Create', 'Play', 'Kindness', 'Family'].map(c => (
+        {(['All', 'Create', 'Play', 'Kindness', 'Family'] as const).map(c => (
           <button key={c} className={'pill ' + (category === c ? 'selected' : '')} onClick={() => setCategory(c)}>{c}</button>
         ))}
       </div>
@@ -287,6 +287,8 @@ export default function App() {
     const interval = setInterval(() => setClockTick(value => value + 1), 60000);
     return () => clearInterval(interval);
   }, []);
+  // Switching buildings should show each destination from its beginning.
+  useEffect(() => { window.scrollTo(0, 0); }, [tab]);
   const active = CHILDREN.find(item => item.id === child)!;
 
   async function reload(profile: ChildId = child, key: string = familyKey) {
