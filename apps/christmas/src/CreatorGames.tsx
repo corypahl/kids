@@ -184,8 +184,7 @@ function SnowPortrait({ look }: { look: Outfit }) {
       <ellipse cx="180" cy="123" rx="64" ry="64" fill={snow} stroke="#d4e5eb" strokeWidth="5"/>
       <path d="M130 109Q145 78 163 77" stroke="#fff" strokeWidth="9" strokeLinecap="round" opacity=".86"/>
       <ellipse cx="145" cy="155" rx="13" ry="9" fill="#f4b7b5" opacity=".36"/><ellipse cx="217" cy="155" rx="13" ry="9" fill="#f4b7b5" opacity=".36"/>
-      <Eyes variant={selected(look,'eyes')%4} y={116}/>
-      {selected(look,'eyes')===4 && <g stroke="#3c3543" strokeWidth="4" strokeLinecap="round" fill="none"><path d="M143 116q12 11 24 0M193 116q12 11 24 0"/></g>}
+      <Eyes variant={selected(look,'eyes')} y={116}/>
       {selected(look,'nose')===0 && <path d="M181 131L246 141L178 145Z" fill="#f39a4c" stroke="#d67738" strokeWidth="3"/>}
       {selected(look,'nose')===1 && <circle cx="183" cy="138" r="10" fill="#d56b72" stroke="#f1afb2" strokeWidth="2"/>}
       {selected(look,'nose')===2 && <path d="M183 124l5 10 11 2 -8 7 2 11 -10 -6 -10 6 2 -11 -8 -7 11 -2Z" fill="#f0c65b"/>}
