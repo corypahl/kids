@@ -220,6 +220,7 @@ export function GlitterDiary({ child, ready }: { child: ChildId; ready: boolean 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
+  const [mediaRevision, setMediaRevision] = useState(0);
   const recorder = useRef<MediaRecorder | null>(null);
   const stream = useRef<MediaStream | null>(null);
   const saved = entries.find(item => item.day === day && item.child === child);
@@ -281,7 +282,7 @@ export function GlitterDiary({ child, ready }: { child: ChildId; ready: boolean 
     setSaving(true); setError(''); setMessage('');
     try {
       await requestApi('diary', { method: 'POST', form });
-      await refresh(); setPhoto(null); setAudio(null); setMessage('Saved to Glitter’s Diary!');
+      await refresh(); setMediaRevision(x => x + 1); setPhoto(null); setAudio(null); setMessage('Saved to Glitter’s Diary!');
     } catch (e) { setError(e instanceof Error ? e.message : 'Could not save diary entry.'); }
     finally { setSaving(false); }
   }
@@ -337,9 +338,9 @@ export function GlitterDiary({ child, ready }: { child: ChildId; ready: boolean 
             return <article className="diary-entry" key={profile.id}>
               <h4>{profile.icon} {profile.name}</h4>
               {!entry ? <p>Nothing recorded yet for this day.</p> : <>
-                {entry.hasPhoto && <MediaPreview key={entry.id + 'photo'} id={entry.id} kind="photo" />}
+                {entry.hasPhoto && <MediaPreview key={entry.id + 'photo' + mediaRevision} id={entry.id} kind="photo" />}
                 {entry.note && <p>{entry.note}</p>}
-                {entry.hasAudio && <MediaPreview key={entry.id + 'audio'} id={entry.id} kind="audio" />}
+                {entry.hasAudio && <MediaPreview key={entry.id + 'audio' + mediaRevision} id={entry.id} kind="audio" />}
               </>}
             </article>;
           })}</div>

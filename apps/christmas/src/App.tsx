@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
+import type { FormEvent } from 'react';
 import { ACTIVITIES, CHILDREN, TRIVIA } from './data';
 import type { ChildId, Tab } from './data';
-import { readFamilyKey, requestApi, storeFamilyKey } from './api';
+import { familyToday, readFamilyKey, requestApi, storeFamilyKey } from './api';
 import type { VillageState, Wish } from './api';
 import { AdventCalendar, GlitterDiary, ParentWishes, SantaWishlist } from './Features';
 
@@ -15,11 +16,9 @@ const TABS: { id: Tab; label: string; icon: string }[] = [
 ];
 
 function daysTillChristmas() {
-  const now = new Date();
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  let year = today.getFullYear();
-  if (today > new Date(year, 11, 25)) year++;
-  return Math.round((new Date(year, 11, 25).getTime() - today.getTime()) / 86400000);
+  const [year, month, day] = familyToday().split('-').map(Number);
+  const targetYear = month === 12 && day > 25 ? year + 1 : year;
+  return Math.round((Date.UTC(targetYear, 11, 25) - Date.UTC(year, month - 1, day)) / 86400000);
 }
 
 function shuffle<T,>(items: T[]): T[] {
@@ -291,6 +290,12 @@ export default function App() {
   const [status, setStatus] = useState<'loading' | 'ready' | 'needs-key' | 'error'>(familyKey ? 'loading' : 'needs-key');
   const [error, setError] = useState('');
   const sequence = useRef(0);
+  const [, setClockTick] = useState(0);
+  // Keep the countdown current if a tablet remains open overnight.
+  useEffect(() => {
+    const interval = setInterval(() => setClockTick(value => value + 1), 60000);
+    return () => clearInterval(interval);
+  }, []);
   const active = CHILDREN.find(item => item.id === child)!;
 
   async function reload(profile: ChildId = child, key: string = familyKey) {
@@ -308,7 +313,7 @@ export default function App() {
   }
   useEffect(() => { void reload(child, familyKey); }, [child, familyKey]);
 
-  async function connect(e: React.FormEvent) {
+  async function connect(e: FormEvent) {
     e.preventDefault();
     const key = keyDraft.trim();
     if (!key) return;
@@ -372,6 +377,9 @@ export default function App() {
           </form>
           {status === 'error' && <p className="form-error" role="alert">{error}</p>}
           {status === 'loading' && <p role="status">Loading family data…</p>}
+        </div>}
+        {isReady && <div className="family-status"><span>☁️ Connected to your family lists</span>
+          <button className="pill" onClick={() => { storeFamilyKey(''); setFamilyKey(''); setKeyDraft(''); setStatus('needs-key'); }}>Change family key</button>
         </div>}
         {isReady && error && <p className="form-error" role="alert">{error}</p>}
         {tab === 'home' && <Home days={untilChristmas} child={active.name} childId={child}
