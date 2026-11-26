@@ -4,7 +4,7 @@ import { ACTIVITIES, CHILDREN, TRIVIA } from './data';
 import type { ChildId, Tab } from './data';
 import { familyToday, nativeChristmas, readFamilyKey, requestApi, storeFamilyKey } from './api';
 import type { VillageState, Wish } from './api';
-import { AdventCalendar, GlitterDiary, ParentWishes, SantaWishlist } from './Features';
+import { AdventCalendar, GlitterDiary, SantaWishlist } from './Features';
 
 const TABS: { id: Tab; label: string; icon: string }[] = [
   { id: 'home', label: 'Village', icon: '🏠' },
@@ -12,7 +12,6 @@ const TABS: { id: Tab; label: string; icon: string }[] = [
   { id: 'activities', label: 'Activities', icon: '⭐' },
   { id: 'wishlist', label: 'Santa’s List', icon: '🎁' },
   { id: 'diary', label: 'Glitter’s Diary', icon: '📸' },
-  { id: 'parent', label: 'Grown-ups', icon: '🔐' },
 ];
 
 function daysTillChristmas() {
@@ -394,7 +393,6 @@ export default function App() {
         {tab === 'wishlist' && isReady && <SantaWishlist child={active.name} wishes={state.wishes}
           onAdd={addWish} onFavorite={wish => changeWish(wish)} onRemove={wish => changeWish(wish, true)} />}
         {tab === 'diary' && isReady && <GlitterDiary child={child} ready={isReady} />}
-        {tab === 'parent' && isReady && <ParentWishes />}
       </main>
       <footer className="site-footer"><span>✨ Made for little Christmas helpers ✨</span><a href="/">← Back to Kids Hub</a></footer>
     </div>

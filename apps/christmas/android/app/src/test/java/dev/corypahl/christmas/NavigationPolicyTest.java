@@ -10,6 +10,7 @@ public final class NavigationPolicyTest {
         assertFalse(NavigationPolicy.isChristmasUrl("https://evil.example/christmas"));
         assertFalse(NavigationPolicy.isChristmasUrl("https://kids.corypahl.dev/"));
         assertFalse(NavigationPolicy.isChristmasUrl("https://kids.corypahl.dev/christmas-other"));
+        assertFalse(NavigationPolicy.isChristmasUrl("https://kids.corypahl.dev/christmas/parent/"));
         assertFalse(NavigationPolicy.isChristmasUrl("http://kids.corypahl.dev/christmas/"));
         assertFalse(NavigationPolicy.isChristmasUrl("javascript:alert(1)"));
     }

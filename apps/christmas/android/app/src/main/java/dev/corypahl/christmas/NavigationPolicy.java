@@ -10,6 +10,7 @@ public final class NavigationPolicy {
         if (uri == null || !"https".equalsIgnoreCase(uri.getScheme())
                 || !"kids.corypahl.dev".equalsIgnoreCase(uri.getHost())) return false;
         String path = uri.normalize().getPath();
+        if ("/christmas/parent".equals(path) || path.startsWith("/christmas/parent/")) return false;
         return "/christmas".equals(path) || path.startsWith("/christmas/");
     }
     public static boolean isExternalWebUrl(String raw) {

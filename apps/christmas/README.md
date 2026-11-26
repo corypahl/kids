@@ -5,7 +5,7 @@ Family Christmas app at kids.corypahl.dev/christmas/ with separate child profile
 - Home: Christmas countdown and 24 daily surprises including jokes, games, stories, and activities. Doors unlock December 1–24 by the America/Detroit household date. Opened days sync in D1.
 - Wish lists: each child's typed or voice-transcribed wishes sync through D1 and can be viewed or removed on different devices. Browser speech recognition may involve a speech service; typing remains supported.
 - Glitter's Diary: one entry per child per date between November 1 and December 25 with optional photo, actual voice recording, and note. D1 stores metadata; private R2 stores media.
-- Grown-ups: a separate secret unlocks purchased-gift checkboxes. Purchase flags are never returned to the child API.
+- Grown-ups: standalone web dashboard at https://kids.corypahl.dev/christmas/parent/ for all three kids' wish lists, purchases, and Glitter diary photos/voice recordings. It requires only the separate parent secret, in memory for the current page session. No adult controls appear in the children's Android app.
 - Games: existing memory, counting, and trivia. Activity completion syncs to D1.
 
 ## Before deployment

@@ -5,6 +5,10 @@ const TZ = 'America/Detroit';
 
 export function assetRequest(request) {
   const url = new URL(request.url);
+  if (url.pathname === '/christmas/parent') {
+    url.pathname = '/christmas/parent/';
+    return { redirect: url.toString() };
+  }
   if (url.pathname === '/christmas') {
     url.pathname = '/christmas/';
     return { redirect: url.toString() };
@@ -12,6 +16,7 @@ export function assetRequest(request) {
   if (url.pathname.startsWith('/christmas/')) {
     url.pathname = url.pathname.slice('/christmas'.length) || '/';
   }
+  if (url.pathname === '/parent/') url.pathname = '/parent/index.html';
   return { request: new Request(url, request) };
 }
 
@@ -49,13 +54,19 @@ function fileOk(file, allowed, maxBytes) {
 }
 const mediaSuffix = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp', 'image/heic': 'heic', 'audio/webm': 'webm', 'audio/mp4': 'm4a', 'audio/ogg': 'ogg', 'audio/mpeg': 'mp3', 'audio/aac': 'aac', 'audio/3gpp': '3gp' };
 async function api(request, env, pathname, url) {
-  // Never expose family data, recordings, or parent shopping state without a configured key.
-  if (!env.CHRISTMAS_FAMILY_KEY || !env.DB) return fail('Family storage has not been configured yet.', 503);
-  if (!familyAuthorized(request, env)) return fail('Family key required or incorrect.', 401);
+  // The parent dashboard uses only its distinct parent key; no kid/app credential is needed.
+  // Child API routes remain guarded by the existing family key.
+  if (!env.DB) return fail('Family storage has not been configured yet.', 503);
+  const path = pathname.slice('/api'.length);
+  if (path.startsWith('/parent/')) {
+    if (!parentAuthorized(request, env)) return fail('Parent key required or incorrect.', 403);
+  } else {
+    if (!env.CHRISTMAS_FAMILY_KEY) return fail('Family storage has not been configured yet.', 503);
+    if (!familyAuthorized(request, env)) return fail('Family key required or incorrect.', 401);
+  }
   if (request.method !== 'GET' && request.headers.get('Origin') && new URL(request.headers.get('Origin')).origin !== url.origin) {
     return fail('Invalid request origin.', 403);
   }
-  const path = pathname.slice('/api'.length);
   const method = request.method;
 
   if (path === '/status' && method === 'GET') return response({ ready: true });
@@ -186,6 +197,38 @@ async function api(request, env, pathname, url) {
     const file = await env.MEDIA.get(key);
     if (!file) return fail('Recording not found.', 404);
     return new Response(file.body, { headers: { 'Content-Type': type || 'application/octet-stream', 'Cache-Control': 'private, no-store', 'X-Content-Type-Options': 'nosniff' } });
+  }
+
+
+  // Parent dashboard can retrieve the same diary media without the child's APK credential.
+  const parentMediaMatch = path.match(/^\/parent\/media\/([a-f0-9-]{36})\/(photo|audio)$/);
+  if (parentMediaMatch && method === 'GET') {
+    if (!env.MEDIA) return fail('Media storage not configured.', 503);
+    const item = await env.DB.prepare('SELECT photo_key, audio_key, photo_type, audio_type FROM glitter_diary WHERE id = ?')
+      .bind(parentMediaMatch[1]).first();
+    if (!item) return fail('Diary entry not found.', 404);
+    const kind = parentMediaMatch[2];
+    const key = kind === 'photo' ? item.photo_key : item.audio_key;
+    const type = kind === 'photo' ? item.photo_type : item.audio_type;
+    if (!key) return fail('Media not found.', 404);
+    const media = await env.MEDIA.get(key);
+    if (!media) return fail('Media not found.', 404);
+    return new Response(media.body, { headers: {
+      'Content-Type': type || 'application/octet-stream',
+      'Cache-Control': 'private, no-store', 'X-Content-Type-Options': 'nosniff',
+    } });
+  }
+
+  if (path === '/parent/diary' && method === 'GET') {
+    const year = Number(url.searchParams.get('year'));
+    const now = todayParts();
+    if (!Number.isInteger(year) || year < 2026 || year > now.year) return fail('Invalid year.', 400);
+    const rows = await env.DB.prepare(
+      'SELECT id, child, day, note, photo_key, audio_key FROM glitter_diary WHERE year = ? ORDER BY day DESC, child'
+    ).bind(year).all();
+    return response({ entries: rows.results.map(({ photo_key, audio_key, ...entry }) => ({
+      ...entry, hasPhoto: Boolean(photo_key), hasAudio: Boolean(audio_key),
+    })) });
   }
 
   if (path === '/parent/wishes' && method === 'GET') {

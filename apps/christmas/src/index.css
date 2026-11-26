@@ -39,7 +39,7 @@ h1,h2,h3,h4,p{margin-top:0}h1,h2,h3,h4{font-family:'Baloo 2',system-ui,sans-seri
 
 
 /* Christmas countdown, shared wish lists, Glitter diary, and parent tools */
-.main-nav{max-width:1050px;grid-template-columns:repeat(6,minmax(0,1fr))}
+.main-nav{max-width:950px;grid-template-columns:repeat(5,minmax(0,1fr))}
 .home-cards{grid-template-columns:repeat(4,minmax(0,1fr))}
 .diary-home{background:#fceff2}
 .advent-section{background:#fff;border:1px solid #e6e6dc;border-radius:26px;margin:22px 0;padding:25px;box-shadow:0 8px 24px #244b3410}
