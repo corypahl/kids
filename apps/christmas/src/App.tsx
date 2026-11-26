@@ -1,15 +1,17 @@
 import { useEffect, useRef, useState } from 'react';
-import type { FormEvent } from 'react';
-import { ACTIVITIES, CHILDREN, TRIVIA, WISH_IDEAS } from './data';
+import { ACTIVITIES, CHILDREN, TRIVIA } from './data';
 import type { ChildId, Tab } from './data';
-import { loadVillage, newWish, saveVillage } from './storage';
-import type { VillageData, Wish } from './storage';
+import { readFamilyKey, requestApi, storeFamilyKey } from './api';
+import type { VillageState, Wish } from './api';
+import { AdventCalendar, GlitterDiary, ParentWishes, SantaWishlist } from './Features';
 
 const TABS: { id: Tab; label: string; icon: string }[] = [
   { id: 'home', label: 'Village', icon: '🏠' },
   { id: 'games', label: 'Games', icon: '🎮' },
   { id: 'activities', label: 'Activities', icon: '⭐' },
   { id: 'wishlist', label: 'Santa’s List', icon: '🎁' },
+  { id: 'diary', label: 'Glitter’s Diary', icon: '📸' },
+  { id: 'parent', label: 'Grown-ups', icon: '🔐' },
 ];
 
 function daysTillChristmas() {
@@ -249,113 +251,32 @@ function Activities({ child, completed, toggle }: { child: string; completed: nu
   );
 }
 
-function WishList({ child, wishes, addWish, toggleFavorite, removeWish }: {
-  child: string;
-  wishes: Wish[];
-  addWish: (name: string, icon: string) => void;
-  toggleFavorite: (id: string) => void;
-  removeWish: (id: string) => void;
+function Home({ days, child, childId, completed, wishes, opened, ready, goTo, onOpen }: {
+  days: number; child: string; childId: ChildId; completed: number; wishes: number;
+  opened: number[]; ready: boolean; goTo: (tab: Tab) => void; onOpen: (day: number) => Promise<void>;
 }) {
-  const [name, setName] = useState('');
-  const [icon, setIcon] = useState('🎁');
-  const [copied, setCopied] = useState(false);
-  const [copyError, setCopyError] = useState(false);
-  const [error, setError] = useState('');
-  function submit(event: FormEvent) {
-    event.preventDefault();
-    if (!name.trim()) { setError('Tell Santa what you wish for!'); return; }
-    addWish(name, icon); setName(''); setIcon('🎁'); setError('');
-  }
-  async function copyList() {
-    const list = wishes.map((wish, i) => String(i + 1) + '. ' + wish.name + (wish.favorite ? ' ⭐ Favorite' : ''));
-    try {
-      await navigator.clipboard.writeText(child + '’s Christmas wish list\n' + (list.join('\n') || 'No wishes yet'));
-      setCopied(true); setCopyError(false);
-    } catch {
-      setCopyError(true); setCopied(false);
-    }
-  }
-  return (
-    <section>
-      <div className="content-heading"><span className="eyebrow">LETTERS TO THE NORTH POLE</span><h2>Santa’s wish list 🎅</h2>
-        <p>{child} can dream up gift ideas, choose favorites, and change the list anytime.</p>
-      </div>
-      <div className="wishlist-layout">
-        <div className="wishlist-form-card">
-          <div className="wish-header-icon">✉️</div>
-          <h3>Dear Santa…</h3>
-          <p>What would you love for Christmas?</p>
-          <form onSubmit={submit}>
-            <label htmlFor="wish-name">My Christmas wish</label>
-            <input id="wish-name" type="text" value={name} onChange={event => { setName(event.target.value); setError(''); }}
-              maxLength={100} placeholder="I would love..." />
-            <span className="field-label">Pick a picture</span>
-            <div className="icon-picker">
-              {['🎁', '🧸', '🎨', '📚', '🧩', '🎮', '⚽', '🚗'].map(choice => (
-                <button key={choice} type="button" aria-label={'Picture ' + choice} aria-pressed={icon === choice}
-                  className={'icon-choice ' + (icon === choice ? 'selected' : '')} onClick={() => setIcon(choice)}>{choice}</button>
-              ))}
-            </div>
-            {error && <p className="form-error" role="alert">{error}</p>}
-            <button className="action full" type="submit">+ Add to my list</button>
-          </form>
-          <div className="idea-divider">Or try an idea</div>
-          <div className="wish-ideas">
-            {WISH_IDEAS.map(idea => (
-              <button key={idea.name} onClick={() => addWish(idea.name, idea.icon)}>
-                <span>{idea.icon}</span>{idea.name} <b>+</b>
-              </button>
-            ))}
-          </div>
-        </div>
-        <div className="wish-list-card">
-          <div className="section-row"><div><h3>🎄 {child}’s wishes</h3><p>{wishes.length} {wishes.length === 1 ? 'wish' : 'wishes'} so far</p></div>
-            <button className="pill" onClick={copyList} disabled={wishes.length === 0}>📋 Copy list</button>
-          </div>
-          {copied && <p className="inline-feedback" role="status">List copied! Share it with a grown-up.</p>}
-          {copyError && <p className="inline-feedback" role="alert">Copy wasn’t available. Try selecting the wishes below.</p>}
-          {wishes.length === 0 ? <div className="empty-wishes"><div>🎅</div><strong>No wishes yet!</strong><p>Add a special wish to get started.</p></div> :
-            <div className="wish-items">
-              {wishes.map(wish => (
-                <div className="wish-item" key={wish.id}>
-                  <span className="wish-emoji">{wish.icon}</span>
-                  <span className="wish-name">{wish.name}{wish.favorite && <small>⭐ Top wish</small>}</span>
-                  <button onClick={() => toggleFavorite(wish.id)} className={'small-icon ' + (wish.favorite ? 'hearted' : '')}
-                    aria-label={wish.favorite ? 'Unmark favorite ' + wish.name : 'Mark favorite ' + wish.name}
-                    aria-pressed={wish.favorite}>★</button>
-                  <button onClick={() => { if (window.confirm('Remove ' + wish.name + ' from the list?')) removeWish(wish.id); }}
-                    className="small-icon remove" aria-label={'Remove ' + wish.name}>×</button>
-                </div>
-              ))}
-            </div>
-          }
-          <p className="storage-note">🔒 Lists are saved only in this browser on this device, not sent to Santa or synced to other tablets. Use “Copy list” to share with a grown-up.</p>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function Home({ days, child, completed, wishes, goTo }: { days: number; child: string; completed: number; wishes: number; goTo: (tab: Tab) => void }) {
   return (
     <section>
       <div className="hero">
         <div className="hero-copy">
           <span className="eyebrow">WELCOME TO CHRISTMAS VILLAGE</span>
           <h1>Christmas magic<br /><em>starts here!</em></h1>
-          <p>Games to play, memories to make, and a special place for your wishes.</p>
+          <p>Games, daily surprises, Santa’s wishes, and Glitter’s adventures.</p>
           <div className="countdown"><span className="countdown-icon">🎅</span>
-            <span><strong>{days === 0 ? 'Merry Christmas!' : days + ' days'}</strong><small>{days === 0 ? 'Have a wonderful day!' : 'until Christmas Day'}</small></span>
+            <span><strong>{days === 0 ? 'Merry Christmas!' : days + ' days'}</strong>
+              <small>{days === 0 ? 'Have a wonderful day!' : 'until Christmas Day'}</small></span>
           </div>
-          <button className="action light" onClick={() => goTo('games')}>🎮 Let’s play →</button>
+          <button className="action light" onClick={() => goTo('wishlist')}>🎁 Tell Santa a wish →</button>
         </div>
         <div className="hero-art" aria-hidden="true"><div className="moon">✦</div><div className="tree-art">🎄</div><div className="gift-art">🎁 🧸 🎁</div></div>
       </div>
+      <AdventCalendar child={childId} opened={opened} onOpen={onOpen} goTo={goTo} enabled={ready} />
       <div className="section-row home-title"><div><span className="eyebrow">EXPLORE THE VILLAGE</span><h2>What shall we do today?</h2></div></div>
       <div className="home-cards">
-        <button className="home-card games-home" onClick={() => goTo('games')}><span>🎮</span><strong>Play Christmas Games</strong><small>Matching, counting, and festive quiz fun</small><b>Play now →</b></button>
-        <button className="home-card activities-home" onClick={() => goTo('activities')}><span>⭐</span><strong>Try a Fun Activity</strong><small>{child} has finished {completed} of 24 adventures</small><b>Explore activities →</b></button>
-        <button className="home-card wishlist-home" onClick={() => goTo('wishlist')}><span>🎁</span><strong>Santa’s Wish List</strong><small>{wishes === 0 ? 'Start a special Christmas list' : child + ' has ' + wishes + ' wishes!'}</small><b>See wishes →</b></button>
+        <button className="home-card games-home" onClick={() => goTo('games')}><span>🎮</span><strong>Christmas Games</strong><small>Matching, counting, and quizzes</small><b>Play now →</b></button>
+        <button className="home-card activities-home" onClick={() => goTo('activities')}><span>⭐</span><strong>Fun Activities</strong><small>{child} finished {completed} of 24 adventures</small><b>Try an activity →</b></button>
+        <button className="home-card wishlist-home" onClick={() => goTo('wishlist')}><span>🎅</span><strong>Santa’s Wish List</strong><small>{wishes === 0 ? 'Make your Christmas wishes' : child + ' has ' + wishes + ' wishes!'}</small><b>See wishes →</b></button>
+        <button className="home-card diary-home" onClick={() => goTo('diary')}><span>📸</span><strong>Glitter’s Diary</strong><small>Photos, little voices, and daily Elf on the Shelf memories</small><b>Visit Glitter →</b></button>
       </div>
     </section>
   );
@@ -364,21 +285,57 @@ function Home({ days, child, completed, wishes, goTo }: { days: number; child: s
 export default function App() {
   const [tab, setTab] = useState<Tab>('home');
   const [child, setChild] = useState<ChildId>('emma');
-  const [data, setData] = useState<VillageData>(loadVillage);
-  const [saveError, setSaveError] = useState(false);
+  const [familyKey, setFamilyKey] = useState(readFamilyKey);
+  const [keyDraft, setKeyDraft] = useState(familyKey);
+  const [state, setState] = useState<VillageState>({ wishes: [], completed: [], opened: [] });
+  const [status, setStatus] = useState<'loading' | 'ready' | 'needs-key' | 'error'>(familyKey ? 'loading' : 'needs-key');
+  const [error, setError] = useState('');
+  const sequence = useRef(0);
   const active = CHILDREN.find(item => item.id === child)!;
-  const current = data[child];
-  useEffect(() => { setSaveError(!saveVillage(data)); }, [data]);
 
-  function updateChild(change: (current: VillageData[ChildId]) => VillageData[ChildId]) {
-    setData(previous => ({ ...previous, [child]: change(previous[child]) }));
+  async function reload(profile: ChildId = child, key: string = familyKey) {
+    const seq = ++sequence.current;
+    if (!key) { setStatus('needs-key'); return; }
+    setStatus('loading');
+    try {
+      const value = await requestApi<VillageState>('state?child=' + profile, { key });
+      if (seq !== sequence.current) return;
+      setState(value); setError(''); setStatus('ready');
+    } catch (e) {
+      if (seq !== sequence.current) return;
+      setStatus('error'); setError(e instanceof Error ? e.message : 'Unable to connect to family storage.');
+    }
   }
+  useEffect(() => { void reload(child, familyKey); }, [child, familyKey]);
 
-  function addWish(name: string, icon: string) {
-    if (!name.trim()) return;
-    updateChild(item => ({ ...item, wishes: [...item.wishes, newWish(name, icon)] }));
+  async function connect(e: React.FormEvent) {
+    e.preventDefault();
+    const key = keyDraft.trim();
+    if (!key) return;
+    storeFamilyKey(key); setFamilyKey(key);
+    await reload(child, key);
   }
-
+  async function addWish(name: string, icon: string) {
+    await requestApi('wishes', { method: 'POST', body: { child, name, icon } });
+    await reload(child);
+  }
+  async function changeWish(wish: Wish, remove = false) {
+    if (remove) await requestApi('wishes/' + wish.id + '?child=' + child, { method: 'DELETE' });
+    else await requestApi('wishes/' + wish.id, { method: 'PATCH', body: { child, favorite: !wish.favorite } });
+    await reload(child);
+  }
+  async function toggleActivity(id: number) {
+    try {
+      await requestApi('activities', { method: 'POST', body: { child, id, completed: !state.completed.includes(id) } });
+      await reload(child);
+    } catch (e) { setError(e instanceof Error ? e.message : 'Could not update activity.'); }
+  }
+  async function openAdvent(day: number) {
+    await requestApi('advent', { method: 'POST', body: { child, day } });
+    await reload(child);
+  }
+  const isReady = status === 'ready';
+  const untilChristmas = daysTillChristmas();
   return (
     <div className="app-shell">
       <div className="snowflakes" aria-hidden="true">❄︎ &nbsp; ✳ &nbsp; ❅ &nbsp; ✻ &nbsp; ❄︎</div>
@@ -402,17 +359,31 @@ export default function App() {
         </button>)}
       </nav>
       <main className="page-main" key={tab + child}>
-        {saveError && <p className="form-error" role="alert">Your browser couldn’t save progress. Check private-browsing or device storage settings.</p>}
-        {tab === 'home' && <Home days={daysTillChristmas()} child={active.name} completed={current.completed.length} wishes={current.wishes.length} goTo={setTab} />}
+        {!isReady && <div className="family-connect">
+          <h3>🔒 Connect the family’s Christmas storage</h3>
+          <p>Wish lists, Glitter’s photos and recordings, and daily progress are private and shared between devices.</p>
+          <form className="family-key-form" onSubmit={connect}>
+            <label htmlFor="family-key">Family key</label>
+            <input type="password" id="family-key" value={keyDraft} autoComplete="off"
+              onChange={e => setKeyDraft(e.target.value)} placeholder="Family access key" />
+            <button className="action" type="submit" disabled={!keyDraft.trim() || status === 'loading'}>
+              {status === 'loading' ? 'Connecting…' : 'Connect'}
+            </button>
+          </form>
+          {status === 'error' && <p className="form-error" role="alert">{error}</p>}
+          {status === 'loading' && <p role="status">Loading family data…</p>}
+        </div>}
+        {isReady && error && <p className="form-error" role="alert">{error}</p>}
+        {tab === 'home' && <Home days={untilChristmas} child={active.name} childId={child}
+          completed={state.completed.length} wishes={state.wishes.length} opened={state.opened}
+          ready={isReady} goTo={setTab} onOpen={openAdvent} />}
         {tab === 'games' && <Games />}
-        {tab === 'activities' && <Activities child={active.name} completed={current.completed}
-          toggle={id => updateChild(item => ({
-            ...item,
-            completed: item.completed.includes(id) ? item.completed.filter(value => value !== id) : [...item.completed, id],
-          }))} />}
-        {tab === 'wishlist' && <WishList child={active.name} wishes={current.wishes} addWish={addWish}
-          toggleFavorite={id => updateChild(item => ({ ...item, wishes: item.wishes.map(wish => wish.id === id ? { ...wish, favorite: !wish.favorite } : wish) }))}
-          removeWish={id => updateChild(item => ({ ...item, wishes: item.wishes.filter(wish => wish.id !== id) }))} />}
+        {tab === 'activities' && isReady && <Activities child={active.name} completed={state.completed}
+          toggle={id => void toggleActivity(id)} />}
+        {tab === 'wishlist' && isReady && <SantaWishlist child={active.name} wishes={state.wishes}
+          onAdd={addWish} onFavorite={wish => changeWish(wish)} onRemove={wish => changeWish(wish, true)} />}
+        {tab === 'diary' && isReady && <GlitterDiary child={child} ready={isReady} />}
+        {tab === 'parent' && isReady && <ParentWishes />}
       </main>
       <footer className="site-footer"><span>✨ Made for little Christmas helpers ✨</span><a href="/">← Back to Kids Hub</a></footer>
     </div>
