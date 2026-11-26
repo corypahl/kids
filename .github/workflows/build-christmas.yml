@@ -54,9 +54,15 @@ jobs:
         if: github.event_name != 'pull_request'
         env:
           CHRISTMAS_D1_DATABASE_ID: ${{ secrets.KIDS_CHRISTMAS_D1_DATABASE_ID }}
+          CHRISTMAS_ACCESS_TEAM_DOMAIN: ${{ secrets.KIDS_CHRISTMAS_ACCESS_TEAM_DOMAIN }}
+          CHRISTMAS_ACCESS_AUD: ${{ secrets.KIDS_CHRISTMAS_ACCESS_AUD }}
         run: |
           if [ -z "$CHRISTMAS_D1_DATABASE_ID" ]; then
             echo "::error::Add repository secret KIDS_CHRISTMAS_D1_DATABASE_ID after creating the D1 database"
+            exit 1
+          fi
+          if [ -z "$CHRISTMAS_ACCESS_TEAM_DOMAIN" ] || [ -z "$CHRISTMAS_ACCESS_AUD" ]; then
+            echo "::error::Configure KIDS_CHRISTMAS_ACCESS_TEAM_DOMAIN and KIDS_CHRISTMAS_ACCESS_AUD repository secrets for Cloudflare Access"
             exit 1
           fi
           node --input-type=module <<'NODE'
@@ -70,6 +76,11 @@ jobs:
             migrations_dir: 'migrations'
           }];
           config.r2_buckets = [{ binding: 'MEDIA', bucket_name: 'kids-christmas-media' }];
+          config.vars = {
+            ...config.vars,
+            CHRISTMAS_ACCESS_TEAM_DOMAIN: process.env.CHRISTMAS_ACCESS_TEAM_DOMAIN,
+            CHRISTMAS_ACCESS_AUD: process.env.CHRISTMAS_ACCESS_AUD
+          };
           fs.writeFileSync(path, JSON.stringify(config, null, 2));
           NODE
 
