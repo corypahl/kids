@@ -16,8 +16,8 @@ android {
         targetSdk = 36
         versionCode = providers.environmentVariable("ANDROID_VERSION_CODE").orNull?.toIntOrNull() ?: 1
         versionName = providers.environmentVariable("ANDROID_VERSION_NAME").orNull ?: "0.1.0"
-        buildConfigField("String", "FAMILY_KEY",
-            "\\"" + familyKey.replace("\\", "\\\\").replace("\\"", "\\\"") + "\\"")
+        val encodedFamilyKey = "\"" + familyKey.replace("\\", "\\\\").replace("\"", "\\\"") + "\""
+        buildConfigField("String", "FAMILY_KEY", encodedFamilyKey)
     }
     buildFeatures { buildConfig = true }
     signingConfigs {
