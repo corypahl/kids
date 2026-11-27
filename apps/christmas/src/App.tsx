@@ -260,13 +260,35 @@ function Home({ days, child, childId, opened, ready, onVisit, onOpen }: {
   onVisit: (destination: VillageDestination) => void;
   onOpen: (day: number) => Promise<void>;
 }) {
+  const [adventOpen, setAdventOpen] = useState(false);
+  const closeButton = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    if (!adventOpen) return;
+    closeButton.current?.focus();
+    const escape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && !document.querySelector('.surprise-overlay')) {
+        setAdventOpen(false);
+      }
+    };
+    window.addEventListener('keydown', escape);
+    return () => window.removeEventListener('keydown', escape);
+  }, [adventOpen]);
+  const closeAdvent = () => {
+    setAdventOpen(false);
+    requestAnimationFrame(() => document.querySelector<HTMLButtonElement>('.village-spot-advent')?.focus());
+  };
   return <section className="village-experience">
-    <VillageHome child={child} days={days}
-      onVisit={onVisit} onAdvent={() => document.getElementById('christmas-advent')?.scrollIntoView({ behavior: 'smooth', block: 'start' })} />
-    <div id="christmas-advent">
-      <AdventCalendar child={childId} opened={opened} onOpen={onOpen}
-        goTo={tab => onVisit({ tab })} enabled={ready} />
-    </div>
+    <VillageHome child={child} days={days} onVisit={onVisit} onAdvent={() => setAdventOpen(true)} />
+    {adventOpen && <div className="village-advent-backdrop">
+      <div className="village-advent-dialog" role="dialog" aria-modal="true" aria-labelledby="village-advent-title">
+        <div className="village-advent-bar">
+          <strong id="village-advent-title">🎄 Advent Tree</strong>
+          <button ref={closeButton} type="button" onClick={closeAdvent} aria-label="Close Advent Tree">✕ Close</button>
+        </div>
+        <AdventCalendar child={childId} opened={opened} onOpen={onOpen}
+          goTo={tab => { setAdventOpen(false); onVisit({ tab }); }} enabled={ready} />
+      </div>
+    </div>}
   </section>;
 }
 
@@ -347,15 +369,15 @@ export default function App() {
   const isReady = status === 'ready';
   const untilChristmas = daysTillChristmas();
   return (
-    <div className="app-shell">
+    <div className={"app-shell " + (child && tab === "home" ? "is-village-home" : "is-village-activity")}>
       <div className="snowflakes" aria-hidden="true">❄︎ &nbsp; ✳ &nbsp; ❅ &nbsp; ✻ &nbsp; ❄︎</div>
       <header className="site-header">
         <a href="/" className="brand"><span className="brand-icon">🎄</span><span>Christmas <b>Village</b><small>part of Kids Hub</small></span></a>
         {child && <div className="device-profile-indicator">
-          <span className="device-profile-name">{active.icon} {active.name}’s Christmas Village</span>
+          <span className="device-profile-name">{active.icon} {active.name}</span>
           <button type="button" className="device-settings-button"
             onClick={() => setSettingsOpen(true)} aria-label="Open parent settings">
-            ⚙️ Settings
+            <span aria-hidden="true">⚙️</span><span className="device-settings-label">Settings</span>
           </button>
         </div>}
       </header>
@@ -377,7 +399,7 @@ export default function App() {
             {nativeApp && <button className="action secondary" onClick={() => void reload()}>Try again</button>}</>}
           {status === 'loading' && <p role="status">Loading family data…</p>}
         </div>}
-        {child && isReady && <div className="family-status"><span>☁️ Connected to your family lists</span>
+        {child && isReady && tab !== 'home' && <div className="family-status"><span>☁️ Connected to your family lists</span>
           {!nativeApp && <button className="pill" onClick={() => { storeFamilyKey(''); setFamilyKey(''); setKeyDraft(''); setStatus('needs-key'); }}>Change family key</button>}
         </div>}
         {child && isReady && error && <p className="form-error" role="alert">{error}</p>}
