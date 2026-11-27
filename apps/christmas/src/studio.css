@@ -35,3 +35,6 @@
 
 /* Inactive editors stay mounted to retain work but are neither displayed nor focusable. */
 .studio-panel[hidden]{display:none!important}
+
+/* Five creative stations fit on one row on landscape tablets; portrait retains the two-column picker. */
+@media(min-width:701px){.studio-stations{grid-template-columns:repeat(5,minmax(0,1fr))}}
