@@ -128,11 +128,9 @@ function VillageIllustration() {
   </svg>;
 }
 
-export function VillageHome({ child, days, completed, wishes, onVisit, onAdvent }: {
+export function VillageHome({ child, days, onVisit, onAdvent }: {
   child: string;
   days: number;
-  completed: number;
-  wishes: number;
   onVisit: (destination: VillageDestination) => void;
   onAdvent: () => void;
 }) {
@@ -168,14 +166,6 @@ export function VillageHome({ child, days, completed, wishes, onVisit, onAdvent 
         </div>
       </div>
       <p className="village-swipe">👆 Tap a building to explore. On smaller screens, swipe to see the whole village.</p>
-    </div>
-    <div className="village-quick">
-      <div><span>🧭</span><strong>Where should we go?</strong><small>{wishes} wishes · {completed} adventures completed</small></div>
-      <div className="village-quick-list">
-        {VILLAGE_STOPS.map(stop => <button key={stop.id} type="button" onClick={() => open(stop)}>
-          <span aria-hidden="true">{stop.icon}</span>{stop.label}
-        </button>)}
-      </div>
     </div>
   </section>;
 }
