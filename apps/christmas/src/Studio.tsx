@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { familyToday } from './api';
 import type { ChildId } from './data';
 import { CharacterCreator } from './CreatorGames';
 import { CookieBakery } from './Village';
@@ -56,6 +57,7 @@ const VIDEO_URL = 'https://www.youtube.com/live/KIc_EKADsOI?is=1RUUTcqSgk2KZIS8'
 
 export function SantaWorkshop() {
   const [playing, setPlaying] = useState(false);
+  const christmasEve = familyToday().slice(5) === '12-24';
   return <section className="santa-workshop" aria-label="Santa's Workshop live video">
     <header className="workshop-heading">
       <span className="eyebrow">🎅 SANTA’S WORKSHOP</span>
@@ -79,6 +81,11 @@ export function SantaWorkshop() {
       {playing && <button className="pill" type="button" onClick={() => setPlaying(false)}>◼ Stop video</button>}
       <p>This is a YouTube video. Playback depends on the livestream being active and the channel allowing embedding. YouTube controls are provided by YouTube.</p>
       <a href={VIDEO_URL} rel="noopener noreferrer">Having trouble? Watch on YouTube ↗</a>
+      <div className="santa-tracker-link">
+        <strong>🛷 ${christmasEve ? 'Santa is on his way!' : 'Track Santa on Christmas Eve'}</strong>
+        <p>Open Google’s official Santa Tracker to follow the Christmas Eve journey. The live map is operated by Google, not this app.</p>
+        <a href="https://santatracker.google.com/" target="_blank" rel="noopener noreferrer">🌍 Open Santa Tracker</a>
+      </div>
     </div>
   </section>;
 }
