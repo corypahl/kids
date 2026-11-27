@@ -28,9 +28,11 @@
   box-shadow:none;
   background:transparent;
 }
+.immersive-shell .village-frame{ position:relative; }
 .immersive-shell .village-viewport{
   overflow:visible;
 }
+.immersive-shell .village-landscape-hint{ display:none; }
 .immersive-shell .village-canvas{
   position:relative;
   width:100%;
@@ -388,8 +390,21 @@
     border-radius:0;
     overflow:hidden;
   }
+  /* Keep the 1200:690 village illustration proportional instead of
+     squeezing it into a 4:3 or narrow tablet. Pan sideways when needed. */
+  .immersive-shell .village-viewport {
+    overflow-x:auto;
+    overflow-y:hidden;
+    overscroll-behavior-x:contain;
+    -webkit-overflow-scrolling:touch;
+    touch-action:pan-x;
+    scrollbar-width:none;
+  }
+  .immersive-shell .village-viewport::-webkit-scrollbar { display:none; }
   .immersive-shell .village-canvas {
     position:relative;
+    width:max(100%,173.913dvh);
+    height:100%;
     aspect-ratio:auto;
     isolation:isolate;
   }
@@ -399,7 +414,10 @@
     height:100%;
   }
   .immersive-shell .village-scene-portrait { display:none; }
+  /* Overlay is a sibling of the scroller, so the countdown and parent
+     Settings stay in place while the children pan the map. */
   .immersive-shell .village-overlay {
+    inset:0 0 auto;
     gap:10px;
     align-items:flex-start;
     padding:clamp(9px,1.5vh,15px) clamp(14px,2vw,26px);
@@ -462,6 +480,21 @@
   .immersive-shell .village-spot-icon { font-size:1.36rem; line-height:1.05; }
   .immersive-shell .village-spot-label { font-size:clamp(.76rem,1.28vw,.94rem); line-height:1.1; }
   .immersive-shell .village-scroll-hint { display:none; }
+  .immersive-shell .village-landscape-hint {
+    position:absolute;
+    bottom:max(12px,env(safe-area-inset-bottom));
+    left:max(14px,env(safe-area-inset-left));
+    z-index:8;
+    padding:8px 12px;
+    border:1px solid #f7efe1a6;
+    border-radius:999px;
+    background:#154d65d9;
+    color:#fff7e7;
+    font-size:.79rem;
+    font-weight:900;
+    box-shadow:0 4px 16px #102c4260;
+    pointer-events:none;
+  }
   .immersive-shell .village-advent-dialog {
     width:min(1000px,100%);
     max-height:calc(100dvh - 20px);
@@ -506,6 +539,16 @@
   .app-shell:not(.immersive-shell) .site-footer { display:none; }
 
   /* Full-featured dress-up creators in a side-by-side tablet studio. */
+  /* The base <=1000px breakpoint stacks these; restore two columns when
+     a tablet is landscape, without affecting portrait phones. */
+  .app-shell:not(.immersive-shell) .wishlist-layout {
+    grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);
+    gap:14px;
+  }
+  .app-shell:not(.immersive-shell) .diary-layout {
+    grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);
+    gap:14px;
+  }
   .creator-layout {
     grid-template-columns:minmax(280px,.88fr) minmax(0,1.12fr);
     gap:14px;
@@ -572,3 +615,8 @@
 /* Compact multiline labels stay legible on the kids' landscape tablets. */
 @media (orientation:landscape) and (min-width:700px){.immersive-shell .village-spot-cabin,.immersive-shell .village-spot-nice-meter{min-width:110px;max-width:138px}.immersive-shell .village-spot-cabin .village-spot-label,.immersive-shell .village-spot-nice-meter .village-spot-label{font-size:.75rem}}
 @media (max-width:570px) and (orientation:portrait){.immersive-shell .village-spot-cabin,.immersive-shell .village-spot-nice-meter{min-width:114px;max-width:150px}.immersive-shell .village-spot-cabin .village-spot-label,.immersive-shell .village-spot-nice-meter .village-spot-label{font-size:.76rem}}
+
+/* Only show the hint when the panorama needs horizontal scrolling. */
+@media (orientation:landscape) and (min-width:700px) and (min-height:460px) and (max-height:1000px) and (max-aspect-ratio:87/50) {
+  .immersive-shell .village-landscape-hint { display:block; }
+}
