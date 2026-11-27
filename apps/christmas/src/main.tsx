@@ -11,6 +11,7 @@ import './naughty-nice.css';
 import './cabin.css';
 import './reindeer-arcade.css';
 import './fidget-maker.css';
+import './holiday-expansion.css';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
