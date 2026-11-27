@@ -310,27 +310,32 @@ export default function App() {
 
   async function connect(e: FormEvent) {
     e.preventDefault();
+    if (!child) return;
     const key = keyDraft.trim();
     if (!key) return;
     storeFamilyKey(key); setFamilyKey(key);
     await reload(child, key);
   }
   async function addWish(name: string, icon: string) {
+    if (!child) return;
     await requestApi('wishes', { method: 'POST', body: { child, name, icon } });
     await reload(child);
   }
   async function changeWish(wish: Wish, remove = false) {
+    if (!child) return;
     if (remove) await requestApi('wishes/' + wish.id + '?child=' + child, { method: 'DELETE' });
     else await requestApi('wishes/' + wish.id, { method: 'PATCH', body: { child, favorite: !wish.favorite } });
     await reload(child);
   }
   async function toggleActivity(id: number) {
+    if (!child) return;
     try {
       await requestApi('activities', { method: 'POST', body: { child, id, completed: !state.completed.includes(id) } });
       await reload(child);
     } catch (e) { setError(e instanceof Error ? e.message : 'Could not update activity.'); }
   }
   async function openAdvent(day: number) {
+    if (!child) return;
     await requestApi('advent', { method: 'POST', body: { child, day } });
     await reload(child);
   }
