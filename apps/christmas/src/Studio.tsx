@@ -33,10 +33,12 @@ export function MrsClausStudio({ child }: { child: ChildId }) {
       </button>)}
     </nav>
     <div className="studio-workspace" aria-live="off">
-      {station === 'cookies' && <CookieBakery />}
-      {station === 'snowmen' && <CharacterCreator key={child + '-snowman'} kind="snowman" child={child}/>}
-      {station === 'elves' && <CharacterCreator key={child + '-elf'} kind="elf" child={child}/>}
-      {station === 'gingerbread' && <GingerbreadDesigner child={child}/>}
+      {/* Keep every editor mounted but hide the inactive ones so switching projects
+          doesn't throw away an unfinished cookie, character or gingerbread look. */}
+      <div className="studio-panel" hidden={station !== 'cookies'}><CookieBakery /></div>
+      <div className="studio-panel" hidden={station !== 'snowmen'}><CharacterCreator key={child + '-snowman'} kind="snowman" child={child}/></div>
+      <div className="studio-panel" hidden={station !== 'elves'}><CharacterCreator key={child + '-elf'} kind="elf" child={child}/></div>
+      <div className="studio-panel" hidden={station !== 'gingerbread'}><GingerbreadDesigner child={child}/></div>
     </div>
   </section>;
 }
@@ -68,7 +70,7 @@ export function SantaWorkshop() {
     <div className="workshop-bottom">
       {playing && <button className="pill" type="button" onClick={() => setPlaying(false)}>◼ Stop video</button>}
       <p>This is a YouTube video. Playback depends on the livestream being active and the channel allowing embedding. YouTube controls are provided by YouTube.</p>
-      <a href={VIDEO_URL} target="_blank" rel="noopener noreferrer">Having trouble? Watch on YouTube ↗</a>
+      <a href={VIDEO_URL} rel="noopener noreferrer">Having trouble? Watch on YouTube ↗</a>
     </div>
   </section>;
 }
