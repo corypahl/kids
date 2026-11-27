@@ -1,0 +1,34 @@
+/* Mrs. Claus's child-first creative hub and Santa's livestream. */
+.mrs-claus-studio,.santa-workshop{width:min(1240px,100%);margin:0 auto;padding-bottom:32px}
+.studio-heading{display:flex;gap:17px;align-items:center;margin:12px 0 21px;padding:20px 26px;background:linear-gradient(115deg,#2e7865,#407c8c);border-radius:25px;color:#fff;border:3px solid #e5f3d7;box-shadow:0 10px 28px #1a4d4522}
+.studio-heading-art{font-size:clamp(2.8rem,6vw,4.5rem);white-space:nowrap}
+.studio-heading .eyebrow{color:#ffe7a9;font-size:.75rem}
+.studio-heading h1{font:900 clamp(1.8rem,3.3vw,2.7rem)/1.13 'Baloo 2',system-ui,sans-serif;color:#fff; margin:0 0 5px}
+.studio-heading p{margin:0;color:#f4ffef;max-width:680px}
+.studio-stations{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:0 0 17px}
+.studio-station{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-width:0;min-height:124px;padding:12px 8px;border:3px solid #e2e9d9;border-radius:20px;background:#fffdf3;color:#275e51;box-shadow:0 5px 10px #224f3313;touch-action:manipulation}
+.studio-station-icon{font-size:2.7rem;line-height:1.12}
+.studio-station strong{font:900 1.2rem/1.1 'Baloo 2',system-ui,sans-serif}
+.studio-station small{text-align:center;font-size:.78rem;line-height:1.2;color:#688073}
+.studio-station.selected{border-color:#3e9976;background:#e2f5e6;box-shadow:0 5px 0 #abd5b7}
+.studio-station:focus-visible,.gingerbread-options button:focus-visible{outline:3px solid #ffbf62;outline-offset:3px}
+.studio-workspace{background:#fffdf7;border:2px solid #e8e2d4;padding:12px;border-radius:26px}
+.studio-workspace .mini-adventure .content-heading{margin:8px auto 10px}
+.studio-workspace .character-creator{margin-bottom:12px}
+.studio-workspace .creator-heading{padding:3px 5px 12px}
+.studio-workspace .creator-collection{margin-bottom:0}
+.workshop-heading{text-align:center;margin:10px auto 17px}
+.workshop-heading h1{font:900 clamp(2rem,4vw,2.9rem)/1.08 'Baloo 2',system-ui,sans-serif;color:#275d4e;margin:4px 0}
+.workshop-heading p{margin:0;color:#55796d}
+.santa-player-shell{aspect-ratio:16/9;max-height:calc(100dvh - 200px);min-height:235px;position:relative;overflow:hidden;border-radius:23px;border:6px solid #f9e9c3;box-shadow:0 16px 40px #31564633;background:linear-gradient(135deg,#12566b,#2a7880)}
+.santa-video{display:block;width:100%;height:100%;border:0}
+.santa-player-poster{height:100%;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:11px;padding:23px;color:white;text-align:center}
+.santa-player-poster .santa-player-art{font-size:clamp(3.3rem,10vw,6.5rem)}
+.santa-player-poster strong{font:900 clamp(1.35rem,3vw,2rem)/1.16 'Baloo 2',system-ui,sans-serif}
+.santa-player-poster p{color:#f0f8e9;margin:0 0 8px}
+.santa-player-poster .action{min-height:53px;background:#f9d27f;color:#4c4d3a;border:0}
+.workshop-bottom{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:center;margin:15px auto;color:#647b70;font-size:.85rem;text-align:center}
+.workshop-bottom p{margin:0;flex:1 1 320px}
+.workshop-bottom a{font-weight:900;color:#266e83;text-decoration:underline}
+@media(max-width:700px){.studio-heading{padding:14px;gap:10px;border-radius:16px}.studio-heading-art{font-size:2.6rem}.studio-heading h1{font-size:1.7rem}.studio-heading p{font-size:.84rem}.studio-stations{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.studio-station{min-height:94px;padding:8px 5px;border-radius:14px}.studio-station-icon{font-size:2rem}.studio-station strong{font-size:1rem}.studio-station small{font-size:.7rem}.studio-workspace{padding:6px;border-radius:15px}.santa-player-shell{min-height:200px;max-height:none;border-width:3px;border-radius:15px}.santa-player-poster{padding:10px;gap:4px}.santa-player-art{line-height:1.1}.santa-player-poster p{font-size:.75rem}.santa-player-poster .action{min-height:45px;padding:8px 13px}}
+@media(orientation:landscape) and (min-width:700px) and (max-height:680px){.studio-heading{padding:9px 15px;margin:0 0 10px}.studio-heading-art{font-size:2.2rem}.studio-heading h1{font-size:1.6rem}.studio-stations{gap:8px;margin-bottom:10px}.studio-station{min-height:75px;padding:6px 5px}.studio-station-icon{font-size:1.8rem}.studio-station strong{font-size:1rem}.studio-station small{display:none}.santa-player-shell{max-height:calc(100dvh - 165px);width:auto;margin:0 auto}.workshop-heading{margin:0 auto 8px}.workshop-heading h1{font-size:1.9rem}}

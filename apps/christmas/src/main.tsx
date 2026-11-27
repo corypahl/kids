@@ -6,6 +6,7 @@ import './village.css';
 import './creator-games.css';
 import './device-settings.css';
 import './immersive.css';
+import './studio.css';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
