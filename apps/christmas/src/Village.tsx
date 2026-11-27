@@ -223,21 +223,6 @@ export function VillageHome({ child, days, onSettings, onVisit, onAdvent }: {
         <div className="village-canvas">
           <VillageIllustration />
           <VillagePortraitIllustration />
-          <div className="village-overlay">
-            <div className="village-intro">
-              <span className="village-kicker">❄️ NORTH POLE ADVENTURES</span>
-              <h1><span>{child}’s</span> Christmas Village</h1>
-              <p>Tap a place to explore!</p>
-            </div>
-            <div className="village-overlay-controls">
-              <button type="button" className="village-hud-settings" onClick={onSettings}
-                aria-label="Open grown-up settings">⚙️ <span>Settings</span></button>
-              <div className="village-countdown" aria-live="polite" aria-label={days === 0 ? 'Merry Christmas' : days + ' days until Christmas'}>
-                <strong>{days === 0 ? '🎄' : days}</strong>
-                <small>{days === 0 ? 'Merry Christmas!' : 'days to go'}</small>
-              </div>
-            </div>
-          </div>
           {VILLAGE_STOPS.map(stop => <button
             type="button" key={stop.id}
             className={'village-spot village-spot-' + stop.id}
@@ -254,6 +239,22 @@ export function VillageHome({ child, days, onSettings, onVisit, onAdvent }: {
           <span className="village-scroll-hint" aria-hidden="true">Explore the village <span>↓</span></span>
         </div>
       </div>
+    <div className="village-overlay">
+      <div className="village-intro">
+        <span className="village-kicker">❄️ NORTH POLE ADVENTURES</span>
+        <h1><span>{child}’s</span> Christmas Village</h1>
+        <p>Tap a place to explore!</p>
+      </div>
+      <div className="village-overlay-controls">
+        <button type="button" className="village-hud-settings" onClick={onSettings}
+          aria-label="Open grown-up settings">⚙️ <span>Settings</span></button>
+        <div className="village-countdown" aria-live="polite" aria-label={days === 0 ? 'Merry Christmas' : days + ' days until Christmas'}>
+          <strong>{days === 0 ? '🎄' : days}</strong>
+          <small>{days === 0 ? 'Merry Christmas!' : 'days to go'}</small>
+        </div>
+      </div>
+    </div>
+      <span className="village-landscape-hint" aria-hidden="true">↔ Swipe to explore</span>
     </div>
   </section>;
 }
