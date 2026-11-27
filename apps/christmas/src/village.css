@@ -20,7 +20,7 @@
 .village-spot:hover,.village-spot:focus-visible{transform:translate(-50%,-58%) scale(1.055);box-shadow:0 8px 0 #6e978b75,0 12px 22px #20463b40}
 .village-spot:active{transform:translate(-50%,-48%) scale(.98)}
 .village-spot-icon{font-size:1.65rem;line-height:1.3}.village-spot-label{font:900 .83rem/1.15 "Baloo 2",sans-serif;text-align:center}
-.village-spot-santa{background:#fff2e1;border-color:#fff3c4}.village-spot-glitter{background:#faedff}.village-spot-advent{background:#fff9bf;border-color:#ffe48c}.village-spot-toys{background:#e7f8fd}.village-spot-bakery{background:#ffece2}.village-spot-reindeer{background:#fff1e5}.village-spot-crafts{background:#eef8ff}.village-spot-post{background:#f5eaff}
+.village-spot-santa{background:#fff2e1;border-color:#fff3c4}.village-spot-studio{background:#f9e9ff;border-color:#f5d3ff}.village-spot-studio .village-spot-label{font-size:.8rem}.village-spot-glitter{background:#faedff}.village-spot-advent{background:#fff9bf;border-color:#ffe48c}.village-spot-toys{background:#e7f8fd}.village-spot-bakery{background:#ffece2}.village-spot-reindeer{background:#fff1e5}.village-spot-crafts{background:#eef8ff}.village-spot-post{background:#f5eaff}
 .village-swipe{margin:0;padding:8px 16px 11px;background:#f4fbf5;color:#496d62;font-size:.8rem;font-weight:900;text-align:center}
 #christmas-advent{scroll-margin-top:16px}
 .village-experience .advent-section{margin:25px 0;background:linear-gradient(145deg,#fffef6,#fff2df);border:3px solid #f4e0b7}

@@ -194,6 +194,8 @@
 }
 .immersive-shell .village-spot-icon{font-size:clamp(1.4rem,2vw,1.85rem)}
 .immersive-shell .village-spot-santa{background:#fff0e5ed}
+.immersive-shell .village-spot-studio{background:#fae9feed;border-color:#f9d4ff;min-width:130px;max-width:178px;padding:7px 10px}
+.immersive-shell .village-spot-studio .village-spot-label{font-size:clamp(.75rem,1.15vw,.89rem)}
 .immersive-shell .village-spot-glitter{background:#f8e5ffed}
 .immersive-shell .village-spot-advent{background:#fff5bced}
 .immersive-shell .village-spot-toys{background:#dff5ffed}
@@ -565,3 +567,6 @@
   .immersive-shell .village-countdown { height:65px;width:66px;min-width:66px; }
   .immersive-shell .village-countdown strong { font-size:1.75rem; }
 }
+
+@media(max-width:570px) and (orientation:portrait){.immersive-shell .village-spot-studio{width:170px;min-width:155px;max-width:180px}.immersive-shell .village-spot-studio .village-spot-label{font-size:.76rem}}
+@media(orientation:landscape) and (min-width:700px) and (max-height:1000px){.immersive-shell .village-spot-studio{min-width:126px;max-width:145px;padding:5px 7px}.immersive-shell .village-spot-studio .village-spot-label{font-size:.74rem}}

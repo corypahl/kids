@@ -1,0 +1,65 @@
+/* Mrs. Claus's Design Studio and Santa's Workshop video */
+.design-studio,.santa-workshop-live{max-width:1320px;margin:0 auto 30px}
+.studio-welcome,.santa-live-heading{text-align:center;margin:8px auto 18px;padding:13px 18px 8px}
+.studio-welcome .eyebrow,.santa-live-heading .eyebrow{color:#BC6B64}
+.studio-welcome h1,.santa-live-heading h1{font:900 clamp(2rem,4vw,3.1rem)/1.1 "Baloo 2",system-ui,sans-serif;color:#2B7059;margin:0}
+.studio-welcome p,.santa-live-heading p{font-size:1rem;color:#637B6D;margin:7px auto 0;max-width:650px}
+.studio-picker{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;padding:12px;margin:0 auto 18px;max-width:1100px;border:2px solid #DAE9D9;border-radius:25px;background:#F8FBF3}
+.studio-option{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:110px;gap:5px;padding:10px 7px;border:3px solid #DEE8DB;border-radius:18px;background:linear-gradient(145deg,#fff,#f6f8f2);color:#316852;box-shadow:0 4px 0 #B9CCB8;touch-action:manipulation}
+.studio-option.active{background:linear-gradient(145deg,#E3F9E8,#FDF4D5);border-color:#439A71;color:#206143;box-shadow:0 4px 0 #7BC19A}
+.studio-option:focus-visible{outline:4px solid #ECC46C;outline-offset:2px}
+.studio-option-icon{font-size:2.5rem;line-height:1.05}
+.studio-option strong{font-size:1.04rem;font-weight:900}
+.studio-option small{font-size:.74rem;color:#638170;line-height:1.25;text-align:center}
+.studio-workspace{max-width:1250px;margin:auto}
+.studio-panel[hidden]{display:none!important}
+.studio-panel .character-creator{margin-bottom:15px}
+.studio-panel .creator-heading{padding-top:10px}
+.studio-panel .mini-adventure{margin-bottom:12px}
+.studio-panel .mini-adventure .content-heading{margin:10px auto 16px}
+.gingerbread-svg{display:block;width:100%;height:auto;aspect-ratio:440 / 500}
+.gingerbread-preview-card .creator-preview{max-width:420px}
+.gingerbread-designer .creator-heading{margin-bottom:7px}
+.santa-workshop-live{max-width:1140px}
+.santa-live-heading h1{font-size:clamp(1.75rem,3.5vw,2.7rem)}
+.santa-video-frame{width:min(100%,1040px);aspect-ratio:16/9;margin:0 auto;border:7px solid #FFF3D9;border-radius:26px;background:#17353C;overflow:hidden;box-shadow:0 16px 45px #20554440}
+.santa-video-frame iframe{display:block;width:100%;height:100%;border:0;background:#17353C}
+.santa-video-footer{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;max-width:1040px;margin:13px auto 0;padding:10px 16px;background:#EDF8F0;border:1px solid #CBE8D4;border-radius:17px;color:#326853;font-weight:900;font-size:.92rem}
+.santa-video-footer a{display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:10px 17px;background:#B83E50;border:2px solid #F6E8DB;border-radius:12px;color:#fff;text-decoration:none;white-space:nowrap}
+.santa-video-footer a:focus-visible{outline:4px solid #F0BF65;outline-offset:2px}
+.santa-video-note{max-width:1040px;margin:10px auto;color:#627E6D;font-size:.84rem}
+/* Preserve tablet landscape previews and short, large touch targets. */
+@media (orientation:landscape) and (min-width:700px) and (min-height:460px) and (max-height:1000px){
+  .studio-welcome,.santa-live-heading{margin:0 auto 9px;padding:2px 5px 3px}
+  .studio-welcome h1,.santa-live-heading h1{font-size:clamp(1.65rem,4vh,2.25rem)}
+  .studio-welcome p,.santa-live-heading p{font-size:.84rem;margin:3px auto 0}
+  .studio-picker{gap:8px;padding:8px;margin-bottom:9px;border-radius:16px}
+  .studio-option{min-height:73px;padding:6px 5px;gap:1px;border-width:2px;border-radius:13px}
+  .studio-option-icon{font-size:1.8rem}
+  .studio-option strong{font-size:.9rem}
+  .studio-option small{display:none}
+  .studio-panel .creator-heading{padding:4px 0 12px}
+  .gingerbread-preview-card .creator-preview{width:min(100%,310px)}
+  .santa-video-frame{width:min(100%,calc((100dvh - 210px) * 16 / 9));max-width:1040px;border-width:4px;border-radius:17px}
+  .santa-video-footer{max-width:1040px;font-size:.81rem}
+  .santa-video-note{font-size:.75rem}
+}
+@media(max-width:650px){
+  .studio-welcome{padding:3px 7px 8px}
+  .studio-welcome h1{font-size:1.85rem}
+  .studio-welcome p{font-size:.86rem}
+  .studio-picker{gap:6px;padding:7px;border-radius:15px}
+  .studio-option{min-height:85px;padding:6px 3px;border-radius:11px}
+  .studio-option-icon{font-size:1.85rem}
+  .studio-option strong{font-size:.76rem}
+  .studio-option small{display:none}
+  .santa-video-frame{border-width:3px;border-radius:14px}
+  .santa-video-footer{padding:10px;justify-content:center;text-align:center;font-size:.81rem}
+  .santa-video-footer a{width:100%}
+  .santa-video-note{padding:0 8px;font-size:.78rem}
+}
+@media(max-width:355px){
+  .studio-option strong{font-size:.69rem}
+  .studio-picker{gap:4px;padding:4px}
+  .studio-option-icon{font-size:1.55rem}
+}
