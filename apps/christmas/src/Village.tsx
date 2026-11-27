@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { MouseEvent } from 'react';
 import type { Tab } from './data';
 
@@ -134,30 +134,44 @@ export function VillageHome({ child, days, onVisit, onAdvent }: {
   onVisit: (destination: VillageDestination) => void;
   onAdvent: () => void;
 }) {
+  const viewport = useRef<HTMLDivElement>(null);
+  const [scroll, setScroll] = useState({ available: false, progress: 0 });
+  const updateScroll = () => {
+    const area = viewport.current;
+    if (!area) return;
+    const maximum = Math.max(0, area.scrollWidth - area.clientWidth);
+    setScroll({ available: maximum > 5,
+      progress: maximum ? Math.min(100, Math.max(0, Math.round(area.scrollLeft / maximum * 100))) : 0 });
+  };
+  useEffect(() => {
+    const area = viewport.current;
+    if (!area) return;
+    const observer = new ResizeObserver(updateScroll);
+    observer.observe(area);
+    if (area.firstElementChild) observer.observe(area.firstElementChild);
+    updateScroll();
+    return () => observer.disconnect();
+  }, []);
+  const pan = (direction: -1 | 1) => {
+    const area = viewport.current;
+    if (!area) return;
+    area.scrollBy({ left: direction * Math.max(260, area.clientWidth * .77), behavior: 'smooth' });
+  };
   const open = (stop: VillageStop) => {
     if (stop.advent) onAdvent();
     else if (stop.destination) onVisit(stop.destination);
   };
   return <section className="village-home" aria-label="Explore Christmas Village">
-    <div className="village-intro">
-      <div>
-        <span className="village-kicker">❄️ WELCOME BACK, {child.toUpperCase()}!</span>
-        <h1>Explore <em>Christmas Village</em></h1>
-        <p>Tap a place in our magical village to see what’s inside.</p>
-      </div>
-      <div className="village-countdown" aria-live="polite">
-        <span aria-hidden="true">🎅</span>
-        <div><strong>{days === 0 ? 'Merry Christmas!' : days}</strong><small>{days === 0 ? 'Have a wonderful day!' : 'days until Christmas'}</small></div>
-      </div>
-    </div>
+    <h1 className="village-sr-only">Explore Christmas Village</h1>
     <div className="village-frame">
-      <div className="village-viewport" tabIndex={0} aria-label="Scroll sideways to explore the snowy village">
+      <div className="village-viewport" ref={viewport} onScroll={updateScroll}
+        tabIndex={0} aria-label="Swipe or scroll horizontally to explore the entire Christmas village">
         <div className="village-canvas">
           <VillageIllustration />
           {VILLAGE_STOPS.map(stop => <button
             type="button" key={stop.id}
             className={'village-spot village-spot-' + stop.id}
-            style={{left: stop.x + '%', top: stop.y + '%'}}
+            style={{ left: stop.x + '%', top: stop.y + '%' }}
             aria-label={stop.label + ': ' + stop.description}
             onClick={() => open(stop)}>
             <span className="village-spot-icon" aria-hidden="true">{stop.icon}</span>
@@ -165,8 +179,24 @@ export function VillageHome({ child, days, onVisit, onAdvent }: {
           </button>)}
         </div>
       </div>
-      <p className="village-swipe">👆 Tap a building to explore. On smaller screens, swipe to see the whole village.</p>
     </div>
+    <div className="village-floating-welcome">
+      <span>❄️ WELCOME TO THE NORTH POLE</span>
+      <strong>Hi, {child}!</strong>
+      <small>Tap a building to explore.</small>
+    </div>
+    <div className="village-countdown" aria-label={days === 0 ? 'Merry Christmas' : days + ' days until Christmas'}>
+      <strong>{days === 0 ? '🎄' : days}</strong>
+      <span>{days === 0 ? 'MERRY CHRISTMAS' : 'DAYS'}</span>
+    </div>
+    {scroll.available && <div className="village-explore-controls">
+      <div className="village-scroll-track" aria-hidden="true"><span style={{ width: Math.max(8, scroll.progress) + '%' }} /></div>
+      <div className="village-pan-buttons">
+        <button type="button" onClick={() => pan(-1)} disabled={scroll.progress < 1} aria-label="Explore village to the left">‹</button>
+        <button type="button" onClick={() => pan(1)} disabled={scroll.progress > 99} aria-label="Explore village to the right">›</button>
+      </div>
+    </div>}
+    <p className="village-swipe" aria-hidden="true">{scroll.available ? '↔ Swipe to explore the village' : '✨ Tap a building to play!'}</p>
   </section>;
 }
 
