@@ -26,6 +26,7 @@ export const VILLAGE_STOPS: VillageStop[] = [
   { id: 'glitter', label: "Glitter's Cottage", icon: '📸', description: "Discover Glitter's diary", x: 78, y: 56, mobileX: 75, mobileY: 55, destination: { tab: 'diary' } },
   { id: 'cabin', label: "Mrs. Claus's Cabin", icon: '🏠', description: 'Activities and kindness with Mrs. Claus', x: 27, y: 87, mobileX: 25, mobileY: 71, destination: { tab: 'activities', category: 'All' } },
   { id: 'nice-meter', label: 'Naughty or Nice?', icon: '⭐', description: 'Choose where you think you are on the list this year', x: 65, y: 87, mobileX: 75, mobileY: 71, destination: { tab: 'nice-meter' } },
+  { id: 'passport', label: 'North Pole Passport', icon: '📕', description: 'Collect stamps for Christmas adventures', x: 87, y: 83, mobileX: 50, mobileY: 88, destination: { tab: 'passport' } },
 ];
 
 type HouseProps = { x: number; y: number; wall: string; roof: string; door: string; window: string; large?: boolean };

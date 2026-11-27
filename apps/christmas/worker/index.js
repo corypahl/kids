@@ -1,4 +1,5 @@
 const CHILDREN = new Set(['emma', 'sophie', 'adam']);
+const PASSPORT_STAMPS = new Set(['present-bounce','delivery-run','elf-coding','snow-globe','around-the-world','cursive','advent','kindness']);
 const IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/heic']);
 const AUDIO_TYPES = new Set(['audio/webm', 'audio/mp4', 'audio/ogg', 'audio/mpeg', 'audio/aac', 'audio/3gpp']);
 const TZ = 'America/Detroit';
@@ -114,6 +115,27 @@ async function api(request, env, pathname, url) {
       'ON CONFLICT(child, year) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP'
     ).bind(body.child, year, body.value).run();
     return response({ year, value: body.value });
+  }
+
+  // Seasonal passport: family-key protected and isolated by child and year.
+  if (path === '/passport' && method === 'GET') {
+    const child = url.searchParams.get('child');
+    if (!validChild(child)) return fail('Invalid child profile.', 400);
+    const { year } = todayParts();
+    const rows = await env.DB.prepare(
+      'SELECT stamp FROM christmas_passport_stamps WHERE child = ? AND year = ? ORDER BY earned_at, stamp'
+    ).bind(child, year).all();
+    return response({ year, stamps: rows.results.map(row => row.stamp) });
+  }
+  if (path === '/passport' && method === 'POST') {
+    const body = await safeJson(request);
+    if (!validChild(body?.child) || typeof body?.stamp !== 'string' || !PASSPORT_STAMPS.has(body.stamp))
+      return fail('Invalid passport stamp.', 400);
+    const { year } = todayParts();
+    await env.DB.prepare(
+      'INSERT OR IGNORE INTO christmas_passport_stamps(child, year, stamp) VALUES (?, ?, ?)'
+    ).bind(body.child, year, body.stamp).run();
+    return response({ year, stamp: body.stamp, ok: true });
   }
 
   if (path === '/wishes' && method === 'POST') {

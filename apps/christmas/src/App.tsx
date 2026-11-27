@@ -8,6 +8,10 @@ import { AdventCalendar, GlitterDiary, SantaWishlist } from './Features';
 import { VillageHome } from './Village';
 import { NaughtyNiceMeter } from './NaughtyNiceMeter';
 import { PenguinBowling, ElfDance, RudolphMission } from './ReindeerArcade';
+import { PresentBounce, SantaDeliveryRun, ElfCodingAcademy } from './HolidayGames';
+import { ChristmasAroundWorld } from './HolidayActivities';
+import { NorthPolePassport } from './NorthPolePassport';
+import type { PassportStampId } from './NorthPolePassport';
 import { ElfDesignSchool, SantaWorkshop } from './Studio';
 import { DeviceSettings, readDeviceChild } from './DeviceSettings';
 import type { VillageDestination } from './Village';
@@ -194,12 +198,12 @@ function TriviaGame() {
   );
 }
 
-type GameId = 'memory' | 'counting' | 'trivia' | 'penguin-bowling' | 'elf-dance' | 'rudolph-mission';
-function Games({ game, setGame }: { game: GameId; setGame: (game: GameId) => void }) {
+type GameId = 'memory' | 'counting' | 'trivia' | 'penguin-bowling' | 'elf-dance' | 'rudolph-mission' | 'present-bounce' | 'delivery-run' | 'elf-coding';
+function Games({ game, setGame, onComplete }: { game: GameId; setGame: (game: GameId) => void; onComplete: (stamp: PassportStampId) => void }) {
   return <section>
     <div className="content-heading">
       <span className="eyebrow">🎮 REINDEER GAMES</span>
-      <h2>Reindeer Games</h2><p>Play six Christmas games! Tap one to begin.</p>
+      <h2>Reindeer Games</h2><p>Play nine Christmas games! Tap one to begin.</p>
     </div>
     <div className="game-picker">
       {([
@@ -209,6 +213,9 @@ function Games({ game, setGame }: { game: GameId; setGame: (game: GameId) => voi
         ['penguin-bowling', '🐧', 'Penguin Bowling', 'Aim and roll snowballs'],
         ['elf-dance', '🧝', 'Elf Dance', 'Tap arrows to the beat'],
         ['rudolph-mission', '🦌', 'Rudolph’s Mission', 'Flap through the clouds'],
+        ['present-bounce', '🎁', 'Present Bounce', 'Build a present path'],
+        ['delivery-run', '🛷', 'Delivery Run', 'Aim for chimneys'],
+        ['elf-coding', '🧩', 'Elf Coding', 'Program a holiday maze'],
       ] as const).map(([id, icon, label, desc]) =>
         <button type="button" key={id} onClick={() => setGame(id)}
           className={'game-tile ' + (game === id ? 'active' : '')} aria-pressed={game === id}>
@@ -220,7 +227,11 @@ function Games({ game, setGame }: { game: GameId; setGame: (game: GameId) => voi
         game === 'counting' ? <CountingGame /> :
         game === 'trivia' ? <TriviaGame /> :
         game === 'penguin-bowling' ? <PenguinBowling /> :
-        game === 'elf-dance' ? <ElfDance /> : <RudolphMission />}
+        game === 'elf-dance' ? <ElfDance /> :
+        game === 'rudolph-mission' ? <RudolphMission /> :
+        game === 'present-bounce' ? <PresentBounce onComplete={onComplete} /> :
+        game === 'delivery-run' ? <SantaDeliveryRun onComplete={onComplete} /> :
+        <ElfCodingAcademy onComplete={onComplete} />}
     </div>
   </section>;
 }
@@ -262,11 +273,12 @@ function Activities({ child, completed, toggle, initialCategory, showFilters = t
   );
 }
 
-function MrsClausCabin({ child, completed, toggle, initialCategory }: {
+function MrsClausCabin({ child, completed, toggle, initialCategory, onComplete }: {
   child: string; completed: number[]; toggle: (id: number) => void;
   initialCategory: 'All' | 'Create' | 'Play' | 'Kindness' | 'Family';
+  onComplete: (stamp: PassportStampId) => void;
 }) {
-  const [corner, setCorner] = useState<'All' | 'Kindness'>(initialCategory === 'Kindness' ? 'Kindness' : 'All');
+  const [corner, setCorner] = useState<'All' | 'Kindness' | 'World'>(initialCategory === 'Kindness' ? 'Kindness' : 'All');
   return <section className="mrs-claus-cabin">
     <div className="cabin-banner">
       <span className="cabin-icon" aria-hidden="true">👵🏻🏠</span>
@@ -279,10 +291,13 @@ function MrsClausCabin({ child, completed, toggle, initialCategory }: {
         onClick={() => setCorner('All')}><span aria-hidden="true">⭐</span><strong>Adventures & Crafts</strong><small>Activities for every day</small></button>
       <button type="button" className={corner === 'Kindness' ? 'selected' : ''} aria-pressed={corner === 'Kindness'}
         onClick={() => setCorner('Kindness')}><span aria-hidden="true">💚</span><strong>Kindness Corner</strong><small>Make someone smile</small></button>
+      <button type="button" className={corner === 'World' ? 'selected' : ''} aria-pressed={corner === 'World'}
+        onClick={() => setCorner('World')}><span aria-hidden="true">🌍</span><strong>Around the World</strong><small>Holiday traditions and quizzes</small></button>
     </div>
-    <Activities key={corner} child={child} completed={completed} toggle={toggle}
-      initialCategory={corner === 'Kindness' ? 'Kindness' : 'All'}
-      showFilters={corner === 'All'} />
+    {corner === 'World' ? <ChristmasAroundWorld onComplete={onComplete} /> :
+      <Activities key={corner} child={child} completed={completed} toggle={toggle}
+        initialCategory={corner === 'Kindness' ? 'Kindness' : 'All'}
+        showFilters={corner === 'All'} />}
   </section>;
 }
 
@@ -384,16 +399,23 @@ export default function App() {
     else await requestApi('wishes/' + wish.id, { method: 'PATCH', body: { child, favorite: !wish.favorite } });
     await reload(child);
   }
+  async function awardStamp(stamp: PassportStampId) {
+    if (!child) return;
+    try { await requestApi('passport', { method: 'POST', body: { child, stamp } }); }
+    catch (e) { setError(e instanceof Error ? e.message : 'Could not save passport stamp.'); }
+  }
   async function toggleActivity(id: number) {
     if (!child) return;
     try {
       await requestApi('activities', { method: 'POST', body: { child, id, completed: !state.completed.includes(id) } });
+      if (!state.completed.includes(id) && ACTIVITIES.some(a => a.id === id && a.category === 'Kindness')) await awardStamp('kindness');
       await reload(child);
     } catch (e) { setError(e instanceof Error ? e.message : 'Could not update activity.'); }
   }
   async function openAdvent(day: number) {
     if (!child) return;
     await requestApi('advent', { method: 'POST', body: { child, day } });
+    await awardStamp('advent');
     await reload(child);
   }
   const visit = (destination: VillageDestination) => {
@@ -438,15 +460,17 @@ export default function App() {
         {child && tab === 'home' && <Home days={untilChristmas} child={active.name} childId={child}
           opened={state.opened} ready={isReady} onVisit={visit} onOpen={openAdvent}
           onSettings={() => setSettingsOpen(true)} />}
-        {child && tab === 'games' && <Games game={game} setGame={setGame} />}
+        {child && tab === 'games' && <Games game={game} setGame={setGame} onComplete={stamp => void awardStamp(stamp)} />}
         {child && tab === 'activities' && isReady && <MrsClausCabin child={active.name} completed={state.completed}
-          toggle={id => void toggleActivity(id)} initialCategory={activityCategory} />}
+          toggle={id => void toggleActivity(id)} initialCategory={activityCategory} onComplete={stamp => void awardStamp(stamp)} />}
         {child && tab === 'wishlist' && isReady && <SantaWishlist child={active.name} wishes={state.wishes}
           onAdd={addWish} onFavorite={wish => changeWish(wish)} onRemove={wish => changeWish(wish, true)} />}
         {child && tab === 'diary' && isReady && <GlitterDiary child={child} ready={isReady} />}
-        {child && tab === 'studio' && <ElfDesignSchool child={child} />}
+        {child && tab === 'studio' && <ElfDesignSchool child={child} onComplete={stamp => void awardStamp(stamp)} />}
         {child && tab === 'workshop' && <SantaWorkshop />}
         {child && tab === 'nice-meter' && isReady && <NaughtyNiceMeter child={child} name={active.name} />}
+        {child && tab === 'passport' && isReady && <NorthPolePassport child={child} name={active.name}
+          onVisit={destination => visit({tab:destination})} />}
       </main>
       {!child && <div className="device-profile-unassigned"><h2>⚙️ Grown-up setup</h2><p>Choose this tablet’s Christmas Village profile to get started.</p></div>}
       {settingsOpen && <DeviceSettings assignedChild={child}

@@ -1,0 +1,81 @@
+/* Christmas expansion: web-only games, crafts, cursive and passport. */
+.holiday-panel,.snow-globe-maker,.cursive-workshop,.around-world,.passport-page{max-width:1120px;margin:0 auto 25px}
+.holiday-panel h3,.snow-globe-maker h3,.cursive-workshop h3{font:900 clamp(1.5rem,3vw,2rem)/1.1 'Baloo 2',system-ui,sans-serif;color:#276a59;margin:0 0 5px}
+.holiday-panel p,.snow-globe-maker p,.cursive-workshop p{color:#5e786e}
+.holiday-stats,.holiday-actions,.holiday-tools{display:flex;gap:9px;flex-wrap:wrap;align-items:center;justify-content:center;margin:12px auto}
+.holiday-stats span,.world-progress{background:#eaf8ef;border:1px solid #c3e4cc;border-radius:999px;padding:7px 13px;font-weight:900;color:#326b58;font-size:.85rem}
+.holiday-tools button{border:2px solid #d8e7db;border-radius:14px;background:#f8fbf2;padding:11px 13px;color:#366c5b;font-weight:900;min-height:49px;touch-action:manipulation}
+.holiday-tools button.selected,.holiday-tools button:focus-visible{border-color:#378d72;background:#dbf4e4}
+.holiday-feedback{text-align:center;min-height:1.6em;font-weight:900;color:#2d7963!important;margin:10px auto!important}
+.holiday-actions .action{min-height:49px}
+.bounce-board{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));width:min(100%,730px);gap:4px;margin:12px auto;padding:12px;background:#bfe6eb;border:4px solid #fff6d9;border-radius:21px}
+.bounce-cell{aspect-ratio:1.1;border:2px solid #d6ede5;border-radius:10px;background:#f9fffb;color:#3c7a76;font-size:clamp(1.1rem,3.8vw,2.15rem);font-weight:900;min-width:0;padding:0;touch-action:manipulation}
+.bounce-cell.blocked{background:#82bed6}.bounce-cell.present{background:#fff0ae;border-color:#dfae51}.bounce-cell.goal{background:#e9e0ff}.bounce-cell:disabled{opacity:1}
+.delivery-stage{position:relative;display:block;width:min(100%,800px);height:280px;margin:12px auto;overflow:hidden;border-radius:24px;border:5px solid #e0f6ee;background:linear-gradient(#233d7b,#5c87ad 65%,#dbecf2 66%,#eff7e9);touch-action:manipulation;cursor:pointer}
+.delivery-moon{position:absolute;top:8px;right:10%;font-size:2.2rem}
+.delivery-sleigh{position:absolute;top:21%;font-size:clamp(1.75rem,4vw,2.5rem);white-space:nowrap;transform:translateX(-50%);transition:left 42ms linear}
+.delivery-house{position:absolute;bottom:7%;font-size:clamp(1.8rem,4.4vw,2.7rem);transform:translateX(-50%);line-height:1;filter:drop-shadow(0 3px 2px #244d6170)}
+.delivery-house>span{display:block;font-size:1rem;text-align:center}.delivery-house.delivered{filter:drop-shadow(0 0 9px #ffdf77)}
+.coding-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));width:min(100%,390px);gap:5px;margin:13px auto;padding:10px;border-radius:20px;background:#cfe8e4}
+.coding-cell{aspect-ratio:1;border:2px solid #c5ddd2;border-radius:10px;display:grid;place-items:center;background:#fffdf4;font-size:clamp(1.5rem,3vw,2.3rem);min-width:0}
+.coding-cell.blocked{background:#90bdca}.coding-cell.visited{background:#fff0c5}
+.coding-program{min-height:48px;max-width:750px;padding:12px;margin:10px auto;text-align:center;border:2px dashed #b3d4c0;border-radius:13px;color:#376855;font:900 1.25rem/1.5 system-ui,sans-serif;overflow-wrap:anywhere}
+.trace-word-picker{display:flex;justify-content:center;flex-wrap:wrap;gap:6px;margin:13px auto}
+.trace-word-picker button{min-height:41px;border:2px solid #dbe7d9;padding:6px 11px;border-radius:12px;background:white;color:#326d5b;font-weight:900}
+.trace-word-picker button.selected{background:#e6f6ec;border-color:#3f9873}
+.trace-scroll{overflow-x:auto;border:4px solid #ddf0e2;border-radius:20px;background:#fffdf4;margin:15px auto;max-width:900px}
+.trace-board{max-width:100%;height:auto;min-height:0;display:block;margin:0 auto;touch-action:none;user-select:none;cursor:crosshair}
+.trace-progress{height:27px;width:min(100%,680px);margin:12px auto;position:relative;overflow:hidden;background:#e6ece5;border:1px solid #cddfd2;border-radius:30px;text-align:center}
+.trace-progress>div{position:absolute;inset:0 auto 0 0;background:linear-gradient(90deg,#7acfad,#43bba5);transition:width .15s}
+.trace-progress>span{position:relative;color:#255f4d;font-size:.84rem;font-weight:900}
+.globe-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(280px,.9fr);gap:20px;align-items:center;padding:13px;background:#f7fbf3;border-radius:20px}
+.globe-preview svg{display:block;width:min(100%,440px);height:auto;margin:0 auto;touch-action:manipulation;cursor:crosshair}
+.globe-preview.shaking{animation:globe-shake .12s ease-in-out 6 alternate}
+.globe-controls label{display:flex;flex-direction:column;gap:5px;color:#2e6e59;font-weight:900}
+.globe-controls select{padding:10px;border:2px solid #b6d5bf;border-radius:12px;font:inherit}
+.globe-pieces{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:12px 0}
+.globe-pieces button{display:flex;flex-direction:column;align-items:center;border:2px solid #d9e6d6;border-radius:13px;background:#fff;padding:7px 3px;min-height:68px;font-weight:900;color:#456958}
+.globe-pieces button span{font-size:1.75rem}
+.globe-pieces button.selected{border-color:#369c7d;background:#dff5e7}
+.santa-tracker-link{flex:1 1 100%;padding:13px 17px;border-radius:16px;background:#e6f5ec;color:#275b4a;text-align:center}
+.santa-tracker-link strong{display:block;font-size:1.1rem}.santa-tracker-link p{margin:4px auto!important}
+.santa-tracker-link a{display:inline-block;padding:9px 15px;background:#286e5b;color:white;text-decoration:none;border-radius:14px;margin-top:8px}
+.world-map-wrap{max-width:840px;margin:13px auto;text-align:center;color:#617f74}
+.world-map-wrap small{font-size:.75rem}
+.world-map{display:block;width:100%;height:auto;max-height:320px;border:4px solid #e5f4e5;border-radius:22px}
+.world-map-pin{cursor:pointer;outline:none;touch-action:manipulation}
+.world-map-pin:focus-visible circle{stroke:#c45d64;stroke-width:6}
+.world-country-list{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin:16px 0}
+.world-country-list button{display:flex;flex-direction:column;gap:4px;align-items:center;justify-content:center;min-height:70px;background:#fffef7;color:#326c56;border:2px solid #d9e8d6;border-radius:16px;font-size:1.8rem}
+.world-country-list button span{font-size:.84rem;font-weight:900}
+.world-country-list button.selected{background:#e2f6ea;border-color:#369777}
+.world-card{background:linear-gradient(135deg,#e6f6ee,#fffaf0);border:3px solid #e3ecd7;border-radius:24px;padding:18px 24px;text-align:center}
+.world-card-icon{font-size:clamp(2.8rem,6vw,4rem);line-height:1.2}
+.world-card h3{font:900 2rem 'Baloo 2',system-ui;color:#2b6c57;margin:6px}
+.world-card h4{font:900 1.2rem 'Baloo 2',system-ui;color:#2c5b50}
+.world-card p{max-width:700px;margin:7px auto 15px}
+.world-answers{display:flex;gap:9px;justify-content:center;flex-wrap:wrap;margin:16px auto}
+.world-answers button{padding:12px 15px;min-height:50px;border-radius:13px;border:2px solid #d1e1d2;background:white;color:#305c4d;font-weight:900}
+.world-answers button.correct{background:#d5f4dc;border-color:#47a46e}
+.passport-page{max-width:1060px}.passport-cover{margin:10px auto;padding:26px 20px;text-align:center;color:#fff8dc;border:6px double #f5da8c;border-radius:26px;background:linear-gradient(145deg,#922f4b,#c04f57 58%,#9c314b);box-shadow:0 15px 25px #743d4840}
+.passport-cover>span{display:block;font-size:2.9rem}.passport-cover p{color:#f8e6b1;margin:8px auto;font-weight:900;letter-spacing:.1em}.passport-cover h1{font:900 clamp(2rem,5vw,3.2rem)/1.12 'Baloo 2',system-ui;color:#fff7d8;margin:9px auto}
+.passport-cover strong{font-size:.95rem;letter-spacing:.12em}
+.passport-progress{text-align:center;margin:17px auto;max-width:650px;color:#376855}
+.passport-progress strong{font:900 1.35rem 'Baloo 2',system-ui}
+.passport-progress .progress-track{margin:10px auto;height:16px;border-radius:30px;background:#d9e8dc;overflow:hidden}
+.passport-progress .progress-track div{height:100%;background:#53b68b}
+.passport-daily{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;background:#eef7e8;border:3px solid #cde5c7;border-radius:20px;padding:14px 19px;margin:15px auto}
+.passport-daily h2{font:900 1.35rem 'Baloo 2',system-ui;color:#2d7055;margin:5px 0}
+.passport-daily p{margin:0;color:#557667}.passport-daily .action{margin-left:auto}
+.passport-stamps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px;margin:21px auto}
+.passport-stamp{display:flex;flex-direction:column;align-items:center;gap:6px;min-height:205px;padding:15px 7px;border:3px dashed #d0d7d0;border-radius:20px;background:#eff1eb;color:#738074;text-align:center;filter:grayscale(.3)}
+.passport-stamp.earned{border-style:solid;border-color:#d7b766;color:#366a50;background:#fff8dc;filter:none}
+.passport-seal{display:grid;place-items:center;width:83px;height:83px;border:4px dashed #b9bfaf;border-radius:50%;font-size:2.7rem}
+.passport-stamp.earned .passport-seal{border-color:#d6a657;background:#fff1bc}
+.passport-stamp strong{font:900 1.06rem 'Baloo 2',system-ui}
+.passport-stamp small{max-width:180px;line-height:1.2}.passport-stamp>span{font-size:.8rem;font-weight:900}
+@keyframes globe-shake{from{transform:rotate(-3deg) translateX(-4px)}to{transform:rotate(3deg) translateX(4px)}}
+@media(min-width:701px){.studio-stations{grid-template-columns:repeat(7,minmax(0,1fr))}.studio-station{padding:7px 4px;min-height:93px}.studio-station-icon{font-size:2rem}.studio-station strong{font-size:clamp(.78rem,1.2vw,1.02rem)}.studio-station small{font-size:.66rem}.cabin-corners{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:700px){.globe-layout{grid-template-columns:1fr}.world-country-list,.passport-stamps{grid-template-columns:repeat(2,minmax(0,1fr))}.bounce-board{padding:5px;gap:2px}.bounce-cell{border-radius:5px;font-size:1.25rem}.holiday-tools button{padding:8px}.delivery-stage{height:230px}.passport-stamp{min-height:178px}.trace-board{min-height:0}}
+@media(orientation:landscape) and (min-width:700px) and (max-height:680px){.studio-station small{display:none}.studio-station{min-height:65px}.studio-station-icon{font-size:1.6rem}.globe-preview svg{max-width:315px}.holiday-panel{padding:12px}.delivery-stage{height:190px}.passport-stamp{min-height:155px}.passport-seal{width:55px;height:55px;font-size:1.9rem}}
+@media(prefers-reduced-motion:reduce){.globe-preview.shaking{animation:none}.delivery-sleigh{transition:none}}
