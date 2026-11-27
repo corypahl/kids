@@ -7,6 +7,7 @@ import type { VillageState, Wish } from './api';
 import { AdventCalendar, GlitterDiary, SantaWishlist } from './Features';
 import { VillageHome } from './Village';
 import { NaughtyNiceMeter } from './NaughtyNiceMeter';
+import { PenguinBowling, ElfDance, RudolphMission } from './ReindeerArcade';
 import { ElfDesignSchool, SantaWorkshop } from './Studio';
 import { DeviceSettings, readDeviceChild } from './DeviceSettings';
 import type { VillageDestination } from './Village';
@@ -193,25 +194,34 @@ function TriviaGame() {
   );
 }
 
-type GameId = 'memory' | 'counting' | 'trivia';
+type GameId = 'memory' | 'counting' | 'trivia' | 'penguin-bowling' | 'elf-dance' | 'rudolph-mission';
 function Games({ game, setGame }: { game: GameId; setGame: (game: GameId) => void }) {
   return <section>
     <div className="content-heading">
       <span className="eyebrow">🎮 REINDEER GAMES</span>
-      <h2>Reindeer Games</h2><p>Choose a Christmas game! New adventures can join the herd here.</p>
+      <h2>Reindeer Games</h2><p>Play six Christmas games! Tap one to begin.</p>
     </div>
     <div className="game-picker">
       {([
         ['memory', '🎄', 'Picture Match', 'Flip and find pairs'],
         ['counting', '🎁', 'Count & Play', 'Great for little elves'],
         ['trivia', '🔔', 'Christmas Quiz', 'Fun holiday questions'],
+        ['penguin-bowling', '🐧', 'Penguin Bowling', 'Aim and roll snowballs'],
+        ['elf-dance', '🧝', 'Elf Dance', 'Tap arrows to the beat'],
+        ['rudolph-mission', '🦌', 'Rudolph’s Mission', 'Flap through the clouds'],
       ] as const).map(([id, icon, label, desc]) =>
         <button type="button" key={id} onClick={() => setGame(id)}
           className={'game-tile ' + (game === id ? 'active' : '')} aria-pressed={game === id}>
           <span className="game-tile-icon">{icon}</span><strong>{label}</strong><small>{desc}</small>
         </button>)}
     </div>
-    {game === 'memory' ? <MemoryGame /> : game === 'counting' ? <CountingGame /> : <TriviaGame />}
+    <div className="arcade-game-area" key={game}>
+      {game === 'memory' ? <MemoryGame /> :
+        game === 'counting' ? <CountingGame /> :
+        game === 'trivia' ? <TriviaGame /> :
+        game === 'penguin-bowling' ? <PenguinBowling /> :
+        game === 'elf-dance' ? <ElfDance /> : <RudolphMission />}
+    </div>
   </section>;
 }
 

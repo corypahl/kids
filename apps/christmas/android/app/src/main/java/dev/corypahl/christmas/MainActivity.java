@@ -4,6 +4,11 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
+import android.content.Context;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
@@ -58,6 +63,57 @@ public final class MainActivity extends Activity {
     private Uri cameraUri;
     private PermissionRequest pendingMicRequest;
 
+    // The fidget accelerometer listens only while its game requests motion.
+    // No raw movement data leaves the device; JS receives a shake event only.
+    private SensorManager fidgetSensorManager;
+    private Sensor fidgetAccelerometer;
+    private boolean fidgetMotionRequested = false;
+    private boolean fidgetListenerActive = false;
+    private boolean fidgetGravityReady = false;
+    private float fidgetGX, fidgetGY, fidgetGZ;
+    private long fidgetLastShakeNanos = 0L;
+    private final SensorEventListener fidgetMotionListener = new SensorEventListener() {
+        @Override public void onAccuracyChanged(Sensor sensor, int accuracy) { }
+        @Override public void onSensorChanged(SensorEvent event) {
+            if (!fidgetMotionRequested || event.values.length < 3) return;
+            if (!fidgetGravityReady) {
+                fidgetGX = event.values[0]; fidgetGY = event.values[1]; fidgetGZ = event.values[2];
+                fidgetGravityReady = true;
+                return;
+            }
+            float alpha = .82f;
+            fidgetGX = alpha * fidgetGX + (1 - alpha) * event.values[0];
+            fidgetGY = alpha * fidgetGY + (1 - alpha) * event.values[1];
+            fidgetGZ = alpha * fidgetGZ + (1 - alpha) * event.values[2];
+            float dx = event.values[0] - fidgetGX, dy = event.values[1] - fidgetGY,
+                    dz = event.values[2] - fidgetGZ;
+            double movement = Math.sqrt(dx * dx + dy * dy + dz * dz);
+            if (movement > 11.5 && event.timestamp - fidgetLastShakeNanos > 750000000L) {
+                fidgetLastShakeNanos = event.timestamp;
+                if (webView != null && webView.getUrl() != null &&
+                        NavigationPolicy.isChristmasUrl(webView.getUrl())) {
+                    webView.evaluateJavascript(
+                            "window.dispatchEvent(new Event('christmas-native-shake'))", null);
+                }
+            }
+        }
+    };
+
+    private void startFidgetSensor() {
+        if (fidgetAccelerometer == null || fidgetSensorManager == null || fidgetListenerActive) return;
+        fidgetGravityReady = false;
+        fidgetListenerActive = fidgetSensorManager.registerListener(
+                fidgetMotionListener, fidgetAccelerometer, SensorManager.SENSOR_DELAY_GAME);
+    }
+    private void stopFidgetSensor() {
+        if (fidgetListenerActive && fidgetSensorManager != null) {
+            fidgetSensorManager.unregisterListener(fidgetMotionListener);
+            fidgetListenerActive = false;
+        }
+        fidgetGravityReady = false;
+    }
+
+
     @Override protected void onCreate(Bundle state) {
         super.onCreate(state);
         getWindow().setStatusBarColor(BRAND);
@@ -66,6 +122,9 @@ public final class MainActivity extends Activity {
         FrameLayout root = new FrameLayout(this);
         root.setBackgroundColor(BACKGROUND);
         setContentView(root);
+        fidgetSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        fidgetAccelerometer = fidgetSensorManager == null ? null :
+                fidgetSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         if (Build.VERSION.SDK_INT >= 30) {
             getWindow().setDecorFitsSystemWindows(false);
             root.setOnApplyWindowInsetsListener((v, insets) -> {
@@ -248,6 +307,21 @@ public final class MainActivity extends Activity {
         @JavascriptInterface public String familyKey() {
             return BuildConfig.FAMILY_KEY;
         }
+        @JavascriptInterface public boolean motionAvailable() {
+            return fidgetAccelerometer != null;
+        }
+        @JavascriptInterface public void startFidgetMotion() {
+            runOnUiThread(() -> {
+                fidgetMotionRequested = true;
+                startFidgetSensor();
+            });
+        }
+        @JavascriptInterface public void stopFidgetMotion() {
+            runOnUiThread(() -> {
+                fidgetMotionRequested = false;
+                stopFidgetSensor();
+            });
+        }
         @JavascriptInterface public void dictateWish() {
             runOnUiThread(() -> {
                 Intent speech = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
@@ -311,7 +385,17 @@ public final class MainActivity extends Activity {
         if (webView != null) webView.saveState(state);
         super.onSaveInstanceState(state);
     }
+    @Override protected void onPause() {
+        stopFidgetSensor();
+        super.onPause();
+    }
+    @Override protected void onResume() {
+        super.onResume();
+        if (fidgetMotionRequested) startFidgetSensor();
+    }
     @Override protected void onDestroy() {
+        fidgetMotionRequested = false;
+        stopFidgetSensor();
         if (fileCallback != null) fileCallback.onReceiveValue(null);
         if (pendingMicRequest != null) pendingMicRequest.deny();
         if (webView != null) {

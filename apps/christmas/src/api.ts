@@ -5,7 +5,13 @@ export type VillageState = { wishes: Wish[]; completed: number[]; opened: number
 export type DiaryEntry = { id: string; child: ChildId; day: string; note: string; hasPhoto: boolean; hasAudio: boolean };
 export type ParentWish = Wish & { child: ChildId; purchased: boolean };
 
-export type ChristmasAndroidBridge = { familyKey(): string; dictateWish(): void };
+export type ChristmasAndroidBridge = {
+  familyKey(): string;
+  dictateWish(): void;
+  motionAvailable?(): boolean;
+  startFidgetMotion?(): void;
+  stopFidgetMotion?(): void;
+};
 export function nativeChristmas(): ChristmasAndroidBridge | undefined {
   return (window as unknown as { ChristmasAndroid?: ChristmasAndroidBridge }).ChristmasAndroid;
 }

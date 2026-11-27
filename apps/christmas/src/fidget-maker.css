@@ -1,0 +1,40 @@
+/* Elf Design School squishy maker: drag/pinch interaction, optional shake sensors. */
+.fidget-maker{max-width:1200px;margin:0 auto 38px}
+.fidget-layout{display:grid;grid-template-columns:minmax(300px,.91fr) minmax(320px,1.09fr);align-items:start;gap:18px}
+.fidget-preview-card{background:linear-gradient(160deg,#fff6f0,#f6faff);position:sticky;top:10px}
+.fidget-play-area{position:relative;margin:0 auto;max-width:440px;aspect-ratio:1 / 1;background:radial-gradient(circle at 50% 15%,#fffef0,#d1f0e9 64%,#d8cfea);border:5px solid #f8f3e0;border-radius:25px;display:flex;justify-content:center;align-items:center;touch-action:none;user-select:none;-webkit-user-select:none;cursor:grab;overflow:hidden}
+.fidget-play-area:active{cursor:grabbing}
+.fidget-play-area:focus-visible{outline:5px solid #f5c669;outline-offset:2px}
+.fidget-play-shape{width:100%;height:100%;pointer-events:none}
+.fidget-svg{width:100%;height:100%;display:block;pointer-events:none}
+.fidget-play-area.is-shaking .fidget-play-shape{animation:fidget-wobble .57s ease-in-out}
+.fidget-touch-hint{position:absolute;bottom:9px;left:10px;right:10px;text-align:center;color:#365e58;font-weight:900;font-size:.8rem;background:#fffdf1bf;border-radius:14px;padding:5px;pointer-events:none}
+.fidget-feedback{text-align:center;font-size:.85rem;font-weight:900;color:#547768;margin:8px 0;min-height:28px}
+.fidget-play-buttons{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:8px auto 0}
+.fidget-play-buttons button{min-height:50px;padding:8px;font-size:.8rem;border-radius:13px}
+.fidget-customize{padding:clamp(13px,2vw,20px)}
+.fidget-group{margin:14px 0;padding:0 0 12px;border-bottom:2px dashed #e4e5d4}
+.fidget-group h4{color:#3d725d;margin:2px 0 9px;font:900 1.13rem "Baloo 2",system-ui,sans-serif}
+.fidget-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.fidget-options button{display:flex;flex-direction:column;align-items:center;gap:5px;justify-content:center;text-align:center;min-height:94px;padding:7px 5px;border:2px solid #d6e6d9;border-radius:15px;background:#fff;color:#466859;touch-action:manipulation}
+.fidget-options button.selected{border-color:#439c72;background:#e7f6ea;box-shadow:0 3px 0 #91ccb0}
+.fidget-options button:focus-visible{outline:4px solid #ebc673;outline-offset:2px}
+.fidget-options button span:not(.fidget-swatch){font-size:2rem;line-height:1.05}
+.fidget-options button strong{font-size:.83rem;font-weight:900;line-height:1.15}
+.fidget-options button small{font-size:.67rem;color:#678b76;line-height:1.15}
+.fidget-swatch{display:block;width:38px;height:38px;border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 1px #b3c8b8}
+.fidget-softness label{display:block;font-size:.9rem;color:#47735e;font-weight:900}
+.fidget-softness input{width:100%;accent-color:#9c82c5;min-height:33px}
+.fidget-saved-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:11px;margin:12px 0}
+.fidget-saved-item{display:flex;flex-direction:column;border:2px solid #e1ebda;border-radius:17px;background:#fffdf3;overflow:hidden}
+.fidget-saved-item>button:first-child{display:flex;flex:1;flex-direction:column;align-items:center;gap:3px;min-height:122px;border:0;background:transparent;padding:8px;color:#477560}
+.fidget-saved-icon{font-size:2.7rem}
+.fidget-saved-item strong{font-size:.92rem}
+.fidget-saved-item small{font-size:.75rem;color:#608573}
+.fidget-saved-item .fidget-remove{border:0;border-top:1px solid #e2e9dd;background:#faf2e6;padding:7px;color:#96645c;font-size:.8rem}
+.fidget-safety{text-align:center;color:#678471;font-size:.76rem;margin:10px auto}
+@keyframes fidget-wobble{0%{transform:translateX(0) rotate(0)}20%{transform:translateX(-13px) rotate(-8deg)}40%{transform:translateX(14px) rotate(8deg)}60%{transform:translateX(-10px) rotate(-5deg)}80%{transform:translateX(8px) rotate(4deg)}100%{transform:translateX(0) rotate(0)}}
+@media(max-width:770px) and (orientation:portrait){.fidget-layout{grid-template-columns:1fr;gap:14px}.fidget-preview-card{position:relative;top:auto}.fidget-play-area{max-width:400px}.fidget-play-buttons{grid-template-columns:1fr 1fr}}
+@media(max-width:600px){.fidget-options{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}.fidget-options button{padding:6px 3px;min-height:78px}.fidget-options button span:not(.fidget-swatch){font-size:1.65rem}.fidget-options button strong{font-size:.73rem}.fidget-options button small{display:none}.fidget-play-buttons button{font-size:.72rem}.fidget-maker .creator-heading{padding:7px 8px 13px}}
+@media(orientation:landscape) and (min-width:700px) and (max-height:710px){.fidget-layout{grid-template-columns:minmax(280px,.87fr) minmax(330px,1.13fr);gap:12px}.fidget-play-area{width:min(100%,295px)}.fidget-preview-card{padding:8px;max-height:calc(100dvh - 45px);overflow-y:auto}.fidget-group{margin:7px 0;padding-bottom:5px}.fidget-options button{min-height:66px;padding:3px}.fidget-options button span:not(.fidget-swatch){font-size:1.5rem}.fidget-options button small{display:none}.fidget-options button strong{font-size:.71rem}.fidget-swatch{height:28px;width:28px}.fidget-play-buttons button{min-height:42px}.fidget-customize{padding:10px}.fidget-group h4{font-size:1rem;margin:1px 0 4px}}
+@media(prefers-reduced-motion:reduce){.fidget-play-area.is-shaking .fidget-play-shape{animation:none}}
