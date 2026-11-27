@@ -68,7 +68,7 @@ jobs:
         run: sdkmanager 'platforms;android-36' 'build-tools;36.0.0'
 
       - name: Verify Android tests and build debug APK
-        run: gradle -p apps/christmas/android :app:testDebugUnitTest :app:assembleDebug :app:bundleRelease --build-cache
+        run: gradle -p apps/christmas/android :app:testDebugUnitTest :app:assembleDebug --build-cache
 
       - name: Verify package identity
         run: |
@@ -85,28 +85,28 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
-      - name: Validate Play and signing settings
-        if: github.event_name == 'workflow_dispatch' && inputs.publish_to_play && github.ref == 'refs/heads/main'
+      # Signed bundles are produced for main-branch Android/workflow changes and manual runs.
+      # Publishing to Google Play is still opt-in via workflow_dispatch.
+      - name: Validate signing settings
+        if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
         env:
           ANDROID_CHRISTMAS_FAMILY_KEY: ${{ secrets.ANDROID_CHRISTMAS_FAMILY_KEY }}
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
-          GOOGLE_PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
         run: |
-          for name in ANDROID_CHRISTMAS_FAMILY_KEY ANDROID_KEYSTORE_BASE64 ANDROID_KEYSTORE_PASSWORD ANDROID_KEY_ALIAS ANDROID_KEY_PASSWORD GOOGLE_PLAY_SERVICE_ACCOUNT_JSON; do
+          for name in ANDROID_CHRISTMAS_FAMILY_KEY ANDROID_KEYSTORE_BASE64 ANDROID_KEYSTORE_PASSWORD ANDROID_KEY_ALIAS ANDROID_KEY_PASSWORD; do
             if [[ -z "${!name}" ]]; then
-              echo "::error::$name must be added as a kids repo Actions secret before publishing."
+              echo "::error::$name must be added as a kids repo Actions secret before signing."
               exit 1
             fi
           done
-          python -c 'import json,os; o=json.loads(os.environ["GOOGLE_PLAY_SERVICE_ACCOUNT_JSON"]); assert o.get("type")=="service_account" and o.get("private_key"), "Expected service account JSON"'
           printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/christmas-upload.jks"
           chmod 600 "$RUNNER_TEMP/christmas-upload.jks"
 
-      - name: Build signed bundle for internal testing
-        if: github.event_name == 'workflow_dispatch' && inputs.publish_to_play && github.ref == 'refs/heads/main'
+      - name: Build signed bundle for Play Console
+        if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
         env:
           ANDROID_CHRISTMAS_FAMILY_KEY: ${{ secrets.ANDROID_CHRISTMAS_FAMILY_KEY }}
           ANDROID_RELEASE_STORE_FILE: ${{ runner.temp }}/christmas-upload.jks
@@ -115,7 +115,27 @@ jobs:
           ANDROID_RELEASE_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
           gradle -p apps/christmas/android :app:bundleRelease :app:assembleRelease --build-cache
-          jarsigner -verify apps/christmas/android/app/build/outputs/bundle/release/app-release.aab
+          jarsigner -verify apps/christmas/android/app/build/outputs/bundle/release/app-release.aab | grep -F 'jar verified.'
+
+      - name: Upload signed Play Console AAB
+        if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+        uses: actions/upload-artifact@v7
+        with:
+          name: christmas-android-signed-aab-${{ github.run_number }}
+          path: apps/christmas/android/app/build/outputs/bundle/release/app-release.aab
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Validate Play publisher account
+        if: github.event_name == 'workflow_dispatch' && inputs.publish_to_play && github.ref == 'refs/heads/main'
+        env:
+          GOOGLE_PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+        run: |
+          if [ -z "$GOOGLE_PLAY_SERVICE_ACCOUNT_JSON" ]; then
+            echo "::error::Add kids repo Actions secret GOOGLE_PLAY_SERVICE_ACCOUNT_JSON before publishing."
+            exit 1
+          fi
+          python -c 'import json,os; o=json.loads(os.environ["GOOGLE_PLAY_SERVICE_ACCOUNT_JSON"]); assert o.get("type")=="service_account" and o.get("private_key"), "Expected service account JSON"'
 
       - name: Publish signed AAB to Google Play Internal testing
         if: github.event_name == 'workflow_dispatch' && inputs.publish_to_play && github.ref == 'refs/heads/main'
