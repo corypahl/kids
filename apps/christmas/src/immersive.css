@@ -2,7 +2,7 @@
 .is-village-home {
   height: 100vh;
   height: 100dvh;
-  min-height: 420px;
+  min-height: 0;
   width: 100%;
   overflow: hidden;
   background: #80c1d0;
@@ -401,4 +401,34 @@
 @media (prefers-reduced-motion: reduce) {
   .is-village-home .village-viewport { scroll-behavior: auto; }
   .is-village-home .village-scroll-track > span { transition: none; }
+}
+
+/* A lively village, with gentle motion and no image downloads. */
+.village-elf-bob { animation: village-elf-bounce 3.5s ease-in-out infinite; }
+.village-elf-wave { transform-box: fill-box; transform-origin: 12% 90%; animation: village-elf-greet 3.8s ease-in-out infinite; }
+.village-lamp-glow { animation: village-lamp-breathe 3s ease-in-out infinite; }
+@keyframes village-elf-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+@keyframes village-elf-greet {
+  0%, 40%, 100% { transform: rotate(0); }
+  50%, 60% { transform: rotate(-12deg); }
+}
+@keyframes village-lamp-breathe {
+  0%, 100% { opacity: .45; }
+  50% { opacity: .85; }
+}
+/* Landscape phones need the same uncluttered map without the portrait overlay sizes. */
+@media (max-height: 530px) {
+  .is-village-home .village-floating-welcome { top: 65px; padding: 7px 10px; }
+  .is-village-home .village-floating-welcome > span,
+  .is-village-home .village-floating-welcome small { display: none; }
+  .is-village-home .village-countdown { top: 65px; width: 63px; min-width: 63px; height: 69px; }
+  .is-village-home .village-countdown strong { font-size: 1.7rem; }
+  .is-village-home .village-pan-buttons button { width: 43px; height: 43px; }
+  .is-village-home .village-spot { min-height: 44px; padding: 3px 7px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .village-elf-bob, .village-elf-wave, .village-lamp-glow { animation: none; }
 }
