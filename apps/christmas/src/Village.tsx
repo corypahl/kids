@@ -63,6 +63,52 @@ function Pine({ x, y, size = 1 }: { x: number; y: number; size?: number }) {
   </g>;
 }
 
+function VillageElf({ x, y, coat, holding = false }: {
+  x: number; y: number; coat: string; holding?: boolean;
+}) {
+  return <g transform={'translate(' + x + ' ' + y + ')'} aria-hidden="true">
+    <ellipse cx="0" cy="0" rx="28" ry="8" fill="#80b9ae" opacity=".4"/>
+    <g className="village-elf-bob">
+      <path d="M-19 -22L-24 1L-5 1L0 -25Z M3 -25L7 1L26 1L20 -25Z" fill="#76554C"/>
+      <path d="M-22 -5Q-16 -12 -2 -6L3 4Q-7 8 -28 2Z M7 -7Q21 -13 27 -4L32 3Q18 8 3 4Z" fill="#574341" stroke="#F4E0AC" strokeWidth="2"/>
+      <path d="M-16 -74Q0 -82 16 -74L27 -25Q0 -14 -28 -25Z" fill={coat} stroke="#FCE6B6" strokeWidth="4"/>
+      <path d="M-9 -73L0 -53L9 -73M-22 -31Q0 -23 22 -31" fill="none" stroke="#FFE6B5" strokeWidth="5"/>
+      <path d="M-21 -67L-35 -46" stroke={coat} strokeWidth="13" strokeLinecap="round"/>
+      <circle cx="-35" cy="-46" r="8" fill="#E8A985"/>
+      <g className="village-elf-wave">
+        <path d="M22 -68L35 -94" stroke={coat} strokeWidth="12" strokeLinecap="round"/>
+        <circle cx="35" cy="-94" r="8" fill="#E8A985"/>
+      </g>
+      <rect x="-8" y="-81" width="16" height="13" rx="5" fill="#E8A985"/>
+      <path d="M-29 -132Q-22 -164 0 -170Q28 -166 33 -132L18 -116L-18 -116Z" fill={coat} stroke="#FFE9BD" strokeWidth="3"/>
+      <path d="M-28 -130Q0 -139 29 -130" stroke="#FFEBC3" strokeWidth="10" strokeLinecap="round"/>
+      <circle cx="4" cy="-169" r="8" fill="#FFE5A0"/>
+      <path d="M-17 -99L-31 -102L-23 -84L-14 -87Z M17 -99L31 -102L23 -84L14 -87Z" fill="#E8A985"/>
+      <circle cx="0" cy="-103" r="30" fill="#F4C49F" stroke="#B88970" strokeWidth="2"/>
+      <path d="M-26 -112Q-20 -145 1 -141Q22 -143 28 -112Q0 -127 -26 -112Z" fill="#704A43"/>
+      <circle cx="-10" cy="-105" r="3.7" fill="#3F494F"/><circle cx="10" cy="-105" r="3.7" fill="#3F494F"/>
+      <path d="M-10 -90Q0 -79 10 -90" fill="none" stroke="#9F5D54" strokeWidth="3" strokeLinecap="round"/>
+      <circle cx="-17" cy="-92" r="5" fill="#ED9C9A" opacity=".58"/><circle cx="17" cy="-92" r="5" fill="#ED9C9A" opacity=".58"/>
+      {holding && <g transform="translate(-42 -37)">
+        <rect x="-12" y="-16" width="26" height="28" rx="3" fill="#F0A7A7" stroke="#FFF7E1" strokeWidth="3"/>
+        <path d="M0 -16V12M-12 -2H14" stroke="#FFE3A0" strokeWidth="5"/>
+      </g>}
+    </g>
+  </g>;
+}
+
+function VillageLamp({ x, y }: { x: number; y: number }) {
+  return <g transform={'translate(' + x + ' ' + y + ')'} aria-hidden="true">
+    <ellipse cx="0" cy="0" rx="25" ry="10" fill="#A1C4B7"/>
+    <path d="M0 -12V-104" stroke="#4E8B76" strokeWidth="11" strokeLinecap="round"/>
+    <path d="M-23 -114L0 -145L23 -114Z" fill="#AC5B5E" stroke="#FFF2D6" strokeWidth="4"/>
+    <path d="M-17 -115H17V-81H-17Z" fill="#FFDB81" stroke="#F9EAC4" strokeWidth="5"/>
+    <path d="M-17 -114H17M0 -114V-81" stroke="#D5A86A" strokeWidth="3"/>
+    <circle className="village-lamp-glow" cx="0" cy="-98" r="51" fill="url(#lanternGlow)" opacity=".7"/>
+    <path d="M-20 -12H20" stroke="#F7FEF7" strokeWidth="9" strokeLinecap="round"/>
+  </g>;
+}
+
 function VillageIllustration() {
   return <svg className="village-scene" viewBox="0 0 1200 690" role="img" aria-label="A colorful snowy Christmas village with Santa's workshop, a toy factory, Glitter's cottage, bakery, reindeer barn, craft cabin, post office, and an Advent tree, with an Elf Design Studio and Snowman Garden." preserveAspectRatio="none">
     <defs>
@@ -114,6 +160,13 @@ function VillageIllustration() {
       <rect x="-20" y="12" width="40" height="22" rx="3" fill="#fff9df"/>
       <path d="M-17 13L0 26L17 13" fill="none" stroke="#9f5974" strokeWidth="2"/>
     </g>
+    <VillageElf x={315} y={511} coat="#C95368" holding />
+    <VillageElf x={538} y={586} coat="#9072B8"/>
+    <VillageElf x={845} y={504} coat="#2C9B85" holding />
+    <VillageElf x={422} y={655} coat="#D49748"/>
+    <VillageElf x={1146} y={658} coat="#6E8FC3"/>
+    <VillageLamp x={335} y={588}/>
+    <VillageLamp x={935} y={608}/>
     <path d="M0 193Q183 141 365 182T732 163T1200 187" fill="none" stroke="#e9f4fa" strokeWidth="4" opacity=".65"/>
     {Array.from({length: 20}, (_, i) => {
       const x = i * 62 + 15, y = 191 - 24 * Math.cos((x / 1200) * Math.PI * 4);
