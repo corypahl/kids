@@ -40,6 +40,11 @@
 .santa-tracker-link{flex:1 1 100%;padding:13px 17px;border-radius:16px;background:#e6f5ec;color:#275b4a;text-align:center}
 .santa-tracker-link strong{display:block;font-size:1.1rem}.santa-tracker-link p{margin:4px auto!important}
 .santa-tracker-link a{display:inline-block;padding:9px 15px;background:#286e5b;color:white;text-decoration:none;border-radius:14px;margin-top:8px}
+.world-map-wrap{max-width:840px;margin:13px auto;text-align:center;color:#617f74}
+.world-map-wrap small{font-size:.75rem}
+.world-map{display:block;width:100%;height:auto;max-height:320px;border:4px solid #e5f4e5;border-radius:22px}
+.world-map-pin{cursor:pointer;outline:none;touch-action:manipulation}
+.world-map-pin:focus-visible circle{stroke:#c45d64;stroke-width:6}
 .world-country-list{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin:16px 0}
 .world-country-list button{display:flex;flex-direction:column;gap:4px;align-items:center;justify-content:center;min-height:70px;background:#fffef7;color:#326c56;border:2px solid #d9e8d6;border-radius:16px;font-size:1.8rem}
 .world-country-list button span{font-size:.84rem;font-weight:900}
