@@ -73,7 +73,7 @@ export function CursiveTracing({ child, onComplete }: { child: ChildId; onComple
     <div className="trace-word-picker" role="group" aria-label="Choose a Christmas word">
       {WORDS.map((w,i)=><button type="button" key={w} className={i===index?'selected':''} aria-pressed={i===index} onClick={()=>reset(i)}>{w}</button>)}
     </div>
-    <div className="trace-scroll"><svg ref={svg} viewBox={'0 0 '+width+' 112'} className="trace-board" role="img"
+    <div className="trace-scroll"><svg ref={svg} viewBox={'0 0 '+width+' 112'} style={{width:Math.min(760,width*2.2)+'px'}} className="trace-board" role="img"
         aria-label={'Trace the cursive word '+word}
         onPointerDown={e=>{e.currentTarget.setPointerCapture(e.pointerId);setDrawing(true);handleMove(e,true);}}
         onPointerMove={e=>handleMove(e,false)} onPointerUp={finish} onPointerCancel={()=>setDrawing(false)}>
