@@ -9,14 +9,6 @@ import { CookieBakery, ReindeerBarn, VillageHome } from './Village';
 import { CharacterCreator } from './CreatorGames';
 import type { VillageDestination } from './Village';
 
-const TABS: { id: Tab; label: string; icon: string }[] = [
-  { id: 'home', label: 'Village', icon: '🏠' },
-  { id: 'games', label: 'Games', icon: '🎮' },
-  { id: 'activities', label: 'Activities', icon: '⭐' },
-  { id: 'wishlist', label: 'Santa’s List', icon: '🎁' },
-  { id: 'diary', label: 'Glitter’s Diary', icon: '📸' },
-];
-
 function daysTillChristmas() {
   const [year, month, day] = familyToday().split('-').map(Number);
   const targetYear = month === 12 && day > 25 ? year + 1 : year;
@@ -261,14 +253,14 @@ function Activities({ child, completed, toggle, initialCategory }: {
   );
 }
 
-function Home({ days, child, childId, completed, wishes, opened, ready, onVisit, onOpen }: {
-  days: number; child: string; childId: ChildId; completed: number; wishes: number;
+function Home({ days, child, childId, opened, ready, onVisit, onOpen }: {
+  days: number; child: string; childId: ChildId;
   opened: number[]; ready: boolean;
   onVisit: (destination: VillageDestination) => void;
   onOpen: (day: number) => Promise<void>;
 }) {
   return <section className="village-experience">
-    <VillageHome child={child} days={days} completed={completed} wishes={wishes}
+    <VillageHome child={child} days={days}
       onVisit={onVisit} onAdvent={() => document.getElementById('christmas-advent')?.scrollIntoView({ behavior: 'smooth', block: 'start' })} />
     <div id="christmas-advent">
       <AdventCalendar child={childId} opened={opened} onOpen={onOpen}
@@ -362,13 +354,6 @@ export default function App() {
           </div>
         </div>
       </header>
-      <nav className={'main-nav ' + (tab === 'home' ? 'village-nav' : '')} aria-label="Quick links around Christmas Village">
-        {TABS.map(item => <button key={item.id} onClick={() => visit({ tab: item.id })}
-          className={tab === item.id ? 'nav-item active' : 'nav-item'}
-          aria-current={tab === item.id ? 'page' : undefined}>
-          <span>{item.icon}</span>{item.label}
-        </button>)}
-      </nav>
       <main className="page-main" key={tab + child}>
         {tab !== 'home' && <button type="button" className="village-back" onClick={() => setTab('home')}>← Back to the village</button>}
         {!isReady && <div className="family-connect">
@@ -392,8 +377,7 @@ export default function App() {
         </div>}
         {isReady && error && <p className="form-error" role="alert">{error}</p>}
         {tab === 'home' && <Home days={untilChristmas} child={active.name} childId={child}
-          completed={state.completed.length} wishes={state.wishes.length} opened={state.opened}
-          ready={isReady} onVisit={visit} onOpen={openAdvent} />}
+          opened={state.opened} ready={isReady} onVisit={visit} onOpen={openAdvent} />}
         {tab === 'games' && <Games game={game} setGame={setGame} child={child} />}
         {tab === 'activities' && isReady && <Activities child={active.name} completed={state.completed}
           toggle={id => void toggleActivity(id)} initialCategory={activityCategory} />}
