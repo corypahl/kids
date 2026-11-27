@@ -254,19 +254,44 @@ function Activities({ child, completed, toggle, initialCategory }: {
   );
 }
 
-function Home({ days, child, childId, opened, ready, onVisit, onOpen }: {
+function Home({ days, child, childId, opened, ready, onVisit, onOpen, onSettings }: {
   days: number; child: string; childId: ChildId;
   opened: number[]; ready: boolean;
   onVisit: (destination: VillageDestination) => void;
   onOpen: (day: number) => Promise<void>;
+  onSettings: () => void;
 }) {
+  const [adventOpen, setAdventOpen] = useState(false);
+  const closeButton = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    if (!adventOpen) return;
+    closeButton.current?.focus();
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && !document.querySelector('.surprise-overlay')) {
+        setAdventOpen(false);
+        requestAnimationFrame(() => document.querySelector<HTMLButtonElement>('.village-spot-advent')?.focus());
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [adventOpen]);
+  function closeAdvent() {
+    setAdventOpen(false);
+    requestAnimationFrame(() => document.querySelector<HTMLButtonElement>('.village-spot-advent')?.focus());
+  }
   return <section className="village-experience">
-    <VillageHome child={child} days={days}
-      onVisit={onVisit} onAdvent={() => document.getElementById('christmas-advent')?.scrollIntoView({ behavior: 'smooth', block: 'start' })} />
-    <div id="christmas-advent">
-      <AdventCalendar child={childId} opened={opened} onOpen={onOpen}
-        goTo={tab => onVisit({ tab })} enabled={ready} />
-    </div>
+    <VillageHome child={child} days={days} onSettings={onSettings}
+      onVisit={onVisit} onAdvent={() => setAdventOpen(true)} />
+    {adventOpen && <div className="village-advent-backdrop">
+      <div className="village-advent-dialog" role="dialog" aria-modal="true" aria-labelledby="village-advent-title">
+        <div className="village-advent-bar">
+          <strong id="village-advent-title">🎄 Advent Tree</strong>
+          <button ref={closeButton} type="button" onClick={closeAdvent} aria-label="Close Advent Tree">✕ Close</button>
+        </div>
+        <AdventCalendar child={childId} opened={opened} onOpen={onOpen}
+          goTo={tab => { setAdventOpen(false); onVisit({ tab }); }} enabled={ready} />
+      </div>
+    </div>}
   </section>;
 }
 
@@ -346,10 +371,11 @@ export default function App() {
   };
   const isReady = status === 'ready';
   const untilChristmas = daysTillChristmas();
+  const atVillage = Boolean(child && tab === 'home');
   return (
-    <div className="app-shell">
-      <div className="snowflakes" aria-hidden="true">❄︎ &nbsp; ✳ &nbsp; ❅ &nbsp; ✻ &nbsp; ❄︎</div>
-      <header className="site-header">
+    <div className={atVillage ? "app-shell immersive-shell" : "app-shell"}>
+      {!atVillage && <div className="snowflakes" aria-hidden="true">❄︎ &nbsp; ✳ &nbsp; ❅ &nbsp; ✻ &nbsp; ❄︎</div>}
+      {!atVillage && <header className="site-header">
         <a href="/" className="brand"><span className="brand-icon">🎄</span><span>Christmas <b>Village</b><small>part of Kids Hub</small></span></a>
         {child && <div className="device-profile-indicator">
           <span className="device-profile-name">{active.icon} {active.name}’s Christmas Village</span>
@@ -358,8 +384,8 @@ export default function App() {
             ⚙️ Settings
           </button>
         </div>}
-      </header>
-      <main className="page-main" key={tab + child}>
+      </header>}
+      <main className={atVillage ? "page-main immersive-main" : "page-main"} key={tab + child}>
         {tab !== 'home' && <button type="button" className="village-back" onClick={() => setTab('home')}>← Back to the village</button>}
         {child && !isReady && <div className="family-connect">
           <h3>{nativeApp ? '🎄 Loading Christmas Village' : '🔒 Connect the family’s Christmas storage'}</h3>
@@ -377,12 +403,10 @@ export default function App() {
             {nativeApp && <button className="action secondary" onClick={() => void reload()}>Try again</button>}</>}
           {status === 'loading' && <p role="status">Loading family data…</p>}
         </div>}
-        {child && isReady && <div className="family-status"><span>☁️ Connected to your family lists</span>
-          {!nativeApp && <button className="pill" onClick={() => { storeFamilyKey(''); setFamilyKey(''); setKeyDraft(''); setStatus('needs-key'); }}>Change family key</button>}
-        </div>}
         {child && isReady && error && <p className="form-error" role="alert">{error}</p>}
         {child && tab === 'home' && <Home days={untilChristmas} child={active.name} childId={child}
-          opened={state.opened} ready={isReady} onVisit={visit} onOpen={openAdvent} />}
+          opened={state.opened} ready={isReady} onVisit={visit} onOpen={openAdvent}
+          onSettings={() => setSettingsOpen(true)} />}
         {child && tab === 'games' && <Games game={game} setGame={setGame} child={child} />}
         {child && tab === 'activities' && isReady && <Activities child={active.name} completed={state.completed}
           toggle={id => void toggleActivity(id)} initialCategory={activityCategory} />}
@@ -405,7 +429,7 @@ export default function App() {
           setTab('home');
           setSettingsOpen(false);
         }} />}
-      <footer className="site-footer"><span>✨ Made for little Christmas helpers ✨</span><a href="/">← Back to Kids Hub</a></footer>
+      {!atVillage && <footer className="site-footer"><span>✨ Made for little Christmas helpers ✨</span><a href="/">← Back to Kids Hub</a></footer>}
     </div>
   );
 }

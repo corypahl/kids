@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { MouseEvent } from 'react';
+import type { CSSProperties, MouseEvent } from 'react';
 import type { Tab } from './data';
 
 export type VillageDestination = { tab: Tab; category?: 'All' | 'Create' | 'Play' | 'Kindness' | 'Family'; game?: 'elf' | 'snowman' };
@@ -11,21 +11,23 @@ type VillageStop = {
   description: string;
   x: number;
   y: number;
+  mobileX: number;
+  mobileY: number;
   destination?: VillageDestination;
   advent?: boolean;
 };
 
 export const VILLAGE_STOPS: VillageStop[] = [
-  { id: 'santa', label: "Santa's Workshop", icon: '🎅', description: 'Tell Santa your wishes', x: 16, y: 57, destination: { tab: 'wishlist' } },
-  { id: 'toys', label: 'Toy Factory', icon: '🎮', description: 'Play Christmas games', x: 38, y: 51, destination: { tab: 'games' } },
-  { id: 'elf-studio', label: 'Elf Design Studio', icon: '🧝', description: 'Dress up your own elf', x: 36, y: 32, destination: { tab: 'games', game: 'elf' } },
-  { id: 'snowman-garden', label: 'Snowman Garden', icon: '⛄', description: 'Build and style a snowman', x: 82, y: 31, destination: { tab: 'games', game: 'snowman' } },
-  { id: 'advent', label: 'Advent Tree', icon: '🎄', description: 'Open a daily surprise', x: 58, y: 61, advent: true },
-  { id: 'glitter', label: "Glitter's Cottage", icon: '📸', description: 'Discover Glitter’s diary', x: 78, y: 56, destination: { tab: 'diary' } },
-  { id: 'bakery', label: 'Cookie Bakery', icon: '🍪', description: 'Decorate a cookie', x: 27, y: 87, destination: { tab: 'bakery' } },
-  { id: 'reindeer', label: 'Reindeer Barn', icon: '🦌', description: 'Feed the reindeer', x: 65, y: 87, destination: { tab: 'reindeer' } },
-  { id: 'crafts', label: 'Craft Cabin', icon: '🎨', description: 'Try a Christmas craft', x: 87, y: 87, destination: { tab: 'activities', category: 'Create' } },
-  { id: 'post', label: 'Elf Post Office', icon: '💌', description: 'Spread some kindness', x: 94, y: 42, destination: { tab: 'activities', category: 'Kindness' } },
+  { id: 'santa', label: "Santa's Workshop", icon: '🎅', description: 'Tell Santa your wishes', x: 16, y: 57, mobileX: 25, mobileY: 39, destination: { tab: 'wishlist' } },
+  { id: 'toys', label: 'Toy Factory', icon: '🎮', description: 'Play Christmas games', x: 38, y: 51, mobileX: 75, mobileY: 39, destination: { tab: 'games' } },
+  { id: 'elf-studio', label: 'Elf Design Studio', icon: '🧝', description: 'Dress up your own elf', x: 36, y: 32, mobileX: 25, mobileY: 23, destination: { tab: 'games', game: 'elf' } },
+  { id: 'snowman-garden', label: 'Snowman Garden', icon: '⛄', description: 'Build and style a snowman', x: 82, y: 31, mobileX: 75, mobileY: 23, destination: { tab: 'games', game: 'snowman' } },
+  { id: 'advent', label: 'Advent Tree', icon: '🎄', description: 'Open a daily surprise', x: 58, y: 61, mobileX: 25, mobileY: 55, advent: true },
+  { id: 'glitter', label: "Glitter's Cottage", icon: '📸', description: 'Discover Glitter’s diary', x: 78, y: 56, mobileX: 75, mobileY: 55, destination: { tab: 'diary' } },
+  { id: 'bakery', label: 'Cookie Bakery', icon: '🍪', description: 'Decorate a cookie', x: 27, y: 87, mobileX: 25, mobileY: 71, destination: { tab: 'bakery' } },
+  { id: 'reindeer', label: 'Reindeer Barn', icon: '🦌', description: 'Feed the reindeer', x: 65, y: 87, mobileX: 75, mobileY: 71, destination: { tab: 'reindeer' } },
+  { id: 'crafts', label: 'Craft Cabin', icon: '🎨', description: 'Try a Christmas craft', x: 87, y: 87, mobileX: 25, mobileY: 87, destination: { tab: 'activities', category: 'Create' } },
+  { id: 'post', label: 'Elf Post Office', icon: '💌', description: 'Spread some kindness', x: 94, y: 42, mobileX: 75, mobileY: 87, destination: { tab: 'activities', category: 'Kindness' } },
 ];
 
 type HouseProps = { x: number; y: number; wall: string; roof: string; door: string; window: string; large?: boolean };
@@ -64,7 +66,7 @@ function Pine({ x, y, size = 1 }: { x: number; y: number; size?: number }) {
 }
 
 function VillageIllustration() {
-  return <svg className="village-scene" viewBox="0 0 1200 690" role="img" aria-label="A colorful snowy Christmas village with Santa's workshop, a toy factory, Glitter's cottage, bakery, reindeer barn, craft cabin, post office, and an Advent tree, with an Elf Design Studio and Snowman Garden." preserveAspectRatio="xMidYMid meet">
+  return <svg className="village-scene village-scene-landscape" viewBox="0 0 1200 690" role="img" aria-label="A colorful snowy Christmas village with Santa's workshop, a toy factory, Glitter's cottage, bakery, reindeer barn, craft cabin, post office, and an Advent tree, with an Elf Design Studio and Snowman Garden." preserveAspectRatio="xMidYMid meet">
     <defs>
       <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
         <stop offset="0" stopColor="#215a87"/><stop offset=".61" stopColor="#65b4c1"/><stop offset="1" stopColor="#d5f2e4"/>
@@ -128,9 +130,86 @@ function VillageIllustration() {
   </svg>;
 }
 
-export function VillageHome({ child, days, onVisit, onAdvent }: {
+
+function VillagePortraitIllustration() {
+  const lights = ['#ffe39e','#ed8a9a','#9fe6b6','#b5e8f5'];
+  return <svg className="village-scene village-scene-portrait" viewBox="0 0 440 1400"
+    role="img" aria-label="An illustrated snowy village to explore by scrolling down, with ten Christmas destinations.">
+    <defs>
+      <linearGradient id="portrait-sky" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stopColor="#194e72"/><stop offset=".27" stopColor="#5b9bbb"/>
+        <stop offset=".65" stopColor="#a8d7d0"/><stop offset="1" stopColor="#d9f2e2"/>
+      </linearGradient>
+      <radialGradient id="portrait-star"><stop stopColor="#fff8d4" stopOpacity=".97"/><stop offset="1" stopColor="#fff8d4" stopOpacity="0"/></radialGradient>
+    </defs>
+    <rect width="440" height="1400" fill="url(#portrait-sky)" />
+    <circle cx="375" cy="108" r="51" fill="#fff4c8"/>
+    <circle cx="375" cy="108" r="91" fill="url(#portrait-star)"/>
+    <path d="M0 286L78 199L142 257L230 177L342 275L401 202L440 249V1400H0Z" fill="#c2dfdf" opacity=".57"/>
+    <path d="M0 364Q125 301 245 345T440 321V1400H0Z" fill="#d9f1e9"/>
+    <path d="M0 465Q113 399 222 454T440 425V1400H0Z" fill="#ecf7eb"/>
+    <path d="M0 570Q180 527 440 568V1400H0Z" fill="#e0f0e5"/>
+    <path d="M0 752Q195 688 440 734V1400H0Z" fill="#e9f5e8"/>
+    <path d="M0 991Q196 942 440 979V1400H0Z" fill="#f1f8eb"/>
+    <path d="M0 1251Q210 1209 440 1241V1400H0Z" fill="#f7faed"/>
+    {/* A winding snow-covered walking path links the village together. */}
+    <path d="M215 208Q208 306 218 407T220 609Q185 740 227 862T220 1127Q188 1240 229 1400"
+      stroke="#bdded9" strokeWidth="98" strokeLinecap="round" fill="none" opacity=".75"/>
+    <path d="M215 208Q208 306 218 407T220 609Q185 740 227 862T220 1127Q188 1240 229 1400"
+      stroke="#fffdf7" strokeWidth="79" strokeLinecap="round" fill="none"/>
+    <path d="M207 286Q222 395 206 514T219 738Q234 915 207 1064T223 1330"
+      stroke="#cfebdf" strokeWidth="3" fill="none" strokeDasharray="12 33" opacity=".8"/>
+    {/* Five rows of buildings, at a comfortable distance for little hands to tap. */}
+    <House x={11} y={205} wall="#df8db4" roof="#97679b" door="#8d537b" window="#ffefa8"/>
+    <House x={231} y={205} wall="#badcf0" roof="#629ec1" door="#709dc1" window="#ffe6ae"/>
+    <House x={11} y={425} wall="#e28a71" roof="#9d4355" door="#994355" window="#ffeab1"/>
+    <House x={231} y={425} wall="#68b3b6" roof="#417e9c" door="#368c81" window="#ffe5a6"/>
+    <Pine x={110} y={803} size={1.05}/>
+    <House x={231} y={645} wall="#cf9dc9" roof="#8d68a8" door="#945e87" window="#ffecaf"/>
+    <House x={11} y={865} wall="#efbb83" roof="#bd7762" door="#8b5a5f" window="#fff3be"/>
+    <House x={231} y={865} wall="#cb9478" roof="#936176" door="#80604f" window="#ffe7a3"/>
+    <House x={11} y={1085} wall="#f4d39a" roof="#79a8b8" door="#679c91" window="#fff0bb"/>
+    <House x={231} y={1085} wall="#abc8a1" roof="#66876f" door="#6c8b75" window="#ffefaa"/>
+    {/* Christmas bunting draped across the village streets. */}
+    {[417,637,857,1077].map((y,i)=><g key={'bunting-'+i}>
+      <path d={'M0 '+y+' Q220 '+(y+30)+' 440 '+y} fill="none" stroke="#f7f6e3" strokeWidth="3" opacity=".8"/>
+      {Array.from({length:9},(_,j)=>{
+        const x=20+j*50, yy=y+Math.sin(j/8*Math.PI)*24;
+        return <g key={j}><circle cx={x} cy={yy} r="13" fill="#fff1c6" opacity=".17"/>
+          <circle className="village-light" cx={x} cy={yy} r="5" fill={lights[(j+i)%lights.length]}/></g>;
+      })}
+    </g>)}
+    {/* Playful snow drifts, tiny lanterns, presents and trees. */}
+    {[405,625,845,1065,1280].map((y,i)=><g key={'decor-'+i}>
+      <ellipse cx={i%2?30:412} cy={y+14} rx="35" ry="17" fill="#fffdf4"/>
+      <path d={'M'+(i%2?22:412)+' '+(y-44)+' l-24 45h48Z'} fill="#2c8774" stroke="#f7fefa" strokeWidth="4"/>
+      <circle cx={i%2?22:412} cy={y-47} r="5" fill="#ffdf83"/>
+    </g>)}
+    <g transform="translate(203 823)">
+      <rect x="-12" y="-15" width="30" height="27" rx="4" fill="#e78992"/>
+      <path d="M2 -15V12M-12 -2H18" stroke="#fff1b0" strokeWidth="7"/>
+    </g>
+    <g transform="translate(201 1330)">
+      <circle cy="-25" r="20" fill="#fffdf6" stroke="#d0e9e4" strokeWidth="2"/>
+      <circle cy="7" r="29" fill="#fffdf6" stroke="#d0e9e4" strokeWidth="2"/>
+      <path d="M-5 -31h2M10 -31h2" stroke="#4c5e5a" strokeWidth="5" strokeLinecap="round"/>
+      <path d="M-3 -16Q7 -8 16 -18" fill="none" stroke="#ad6f61" strokeWidth="2.5"/>
+      <path d="M0 -49H16V-65H0Z" fill="#6f568d"/>
+      <path d="M-10 -49H26" stroke="#6f568d" strokeWidth="7"/>
+    </g>
+    {Array.from({length:84},(_,i)=>{
+      const x=(i*109+31)%430, y=(i*173+49)%1380;
+      return <circle key={i} className="village-flurry" cx={x} cy={y} r={i%4===0?2.9:1.9}
+        fill="#fffcf2" opacity=".7" style={{animationDelay:'-'+(i%19)*.41+'s'}}/>;
+    })}
+    <path d="M0 1375Q75 1349 154 1374T312 1377T440 1372V1400H0Z" fill="#fffef5"/>
+  </svg>;
+}
+
+export function VillageHome({ child, days, onSettings, onVisit, onAdvent }: {
   child: string;
   days: number;
+  onSettings: () => void;
   onVisit: (destination: VillageDestination) => void;
   onAdvent: () => void;
 }) {
@@ -139,33 +218,42 @@ export function VillageHome({ child, days, onVisit, onAdvent }: {
     else if (stop.destination) onVisit(stop.destination);
   };
   return <section className="village-home" aria-label="Explore Christmas Village">
-    <div className="village-intro">
-      <div>
-        <span className="village-kicker">❄️ WELCOME BACK, {child.toUpperCase()}!</span>
-        <h1>Explore <em>Christmas Village</em></h1>
-        <p>Tap a place in our magical village to see what’s inside.</p>
-      </div>
-      <div className="village-countdown" aria-live="polite">
-        <span aria-hidden="true">🎅</span>
-        <div><strong>{days === 0 ? 'Merry Christmas!' : days}</strong><small>{days === 0 ? 'Have a wonderful day!' : 'days until Christmas'}</small></div>
-      </div>
-    </div>
     <div className="village-frame">
-      <div className="village-viewport" tabIndex={0} aria-label="Scroll sideways to explore the snowy village">
+      <div className="village-viewport">
         <div className="village-canvas">
           <VillageIllustration />
+          <VillagePortraitIllustration />
+          <div className="village-overlay">
+            <div className="village-intro">
+              <span className="village-kicker">❄️ NORTH POLE ADVENTURES</span>
+              <h1><span>{child}’s</span> Christmas Village</h1>
+              <p>Tap a place to explore!</p>
+            </div>
+            <div className="village-overlay-controls">
+              <button type="button" className="village-hud-settings" onClick={onSettings}
+                aria-label="Open grown-up settings">⚙️ <span>Settings</span></button>
+              <div className="village-countdown" aria-live="polite" aria-label={days === 0 ? 'Merry Christmas' : days + ' days until Christmas'}>
+                <strong>{days === 0 ? '🎄' : days}</strong>
+                <small>{days === 0 ? 'Merry Christmas!' : 'days to go'}</small>
+              </div>
+            </div>
+          </div>
           {VILLAGE_STOPS.map(stop => <button
             type="button" key={stop.id}
             className={'village-spot village-spot-' + stop.id}
-            style={{left: stop.x + '%', top: stop.y + '%'}}
+            style={{
+              left: stop.x + '%', top: stop.y + '%',
+              '--mobile-x': stop.mobileX + '%',
+              '--mobile-y': stop.mobileY + '%'
+            } as CSSProperties}
             aria-label={stop.label + ': ' + stop.description}
             onClick={() => open(stop)}>
             <span className="village-spot-icon" aria-hidden="true">{stop.icon}</span>
             <span className="village-spot-label">{stop.label}</span>
           </button>)}
+          <span className="village-scroll-hint" aria-hidden="true">Explore the village <span>↓</span></span>
         </div>
       </div>
-      <p className="village-swipe">👆 Tap a building to explore. On smaller screens, swipe to see the whole village.</p>
     </div>
   </section>;
 }
