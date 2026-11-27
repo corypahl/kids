@@ -64,6 +64,9 @@
 .passport-progress strong{font:900 1.35rem 'Baloo 2',system-ui}
 .passport-progress .progress-track{margin:10px auto;height:16px;border-radius:30px;background:#d9e8dc;overflow:hidden}
 .passport-progress .progress-track div{height:100%;background:#53b68b}
+.passport-daily{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;background:#eef7e8;border:3px solid #cde5c7;border-radius:20px;padding:14px 19px;margin:15px auto}
+.passport-daily h2{font:900 1.35rem 'Baloo 2',system-ui;color:#2d7055;margin:5px 0}
+.passport-daily p{margin:0;color:#557667}.passport-daily .action{margin-left:auto}
 .passport-stamps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px;margin:21px auto}
 .passport-stamp{display:flex;flex-direction:column;align-items:center;gap:6px;min-height:205px;padding:15px 7px;border:3px dashed #d0d7d0;border-radius:20px;background:#eff1eb;color:#738074;text-align:center;filter:grayscale(.3)}
 .passport-stamp.earned{border-style:solid;border-color:#d7b766;color:#366a50;background:#fff8dc;filter:none}
