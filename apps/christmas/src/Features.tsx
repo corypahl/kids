@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
-import { CHILDREN, WISH_IDEAS } from './data';
+import { CHILDREN } from './data';
 import type { ChildId, Tab } from './data';
 import { familyToday, getMedia, nativeChristmas, requestApi } from './api';
 import type { DiaryEntry, Wish } from './api';
@@ -29,35 +29,60 @@ export function SantaWishlist({ child, wishes, onAdd, onFavorite, onRemove }: {
   onRemove: (wish: Wish) => Promise<void>;
 }) {
   const [name, setName] = useState('');
-  const [icon, setIcon] = useState('🎁');
+  const [entryMode, setEntryMode] = useState<'keyboard' | 'microphone' | null>(null);
   const [listening, setListening] = useState(false);
   const [review, setReview] = useState(false);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
   const recognition = useRef<SpeechEngine | null>(null);
+  const keyboardInput = useRef<HTMLInputElement | null>(null);
+
   useEffect(() => () => { recognition.current?.stop(); }, []);
+  useEffect(() => {
+    if (entryMode === 'keyboard') keyboardInput.current?.focus();
+  }, [entryMode]);
   useEffect(() => {
     function onNativeDictation(event: Event) {
       const result = (event as CustomEvent<{ text?: string; error?: string }>).detail;
       setListening(false);
       if (result?.text) {
-        setName(result.text.slice(0, 100)); setReview(true); setError('');
+        setEntryMode('microphone');
+        setName(result.text.slice(0, 100));
+        setReview(true);
+        setError('');
       } else {
-        setError(result?.error || 'Speech recognition was cancelled. You can type your wish.');
+        setError(result?.error || 'Speech recognition was cancelled. You can use the keyboard instead.');
       }
     }
     window.addEventListener('christmas-native-dictation', onNativeDictation);
     return () => window.removeEventListener('christmas-native-dictation', onNativeDictation);
   }, []);
+
+  function chooseKeyboard() {
+    if (!nativeChristmas()) recognition.current?.stop();
+    setListening(false);
+    setReview(false);
+    setEntryMode('keyboard');
+    setError('');
+  }
   function startMic() {
+    if (saving) return;
+    setEntryMode('microphone');
+    setName('');
+    setReview(false);
+    setError('');
     const native = nativeChristmas();
     if (native) {
-      try { setListening(true); setError(''); native.dictateWish(); }
-      catch { setListening(false); setError('Unable to start voice typing. You can still type your wish.'); }
+      try { setListening(true); native.dictateWish(); }
+      catch { setListening(false); setError('Unable to start voice input. Tap Keyboard instead.'); }
       return;
     }
     const Ctor = speechConstructor();
-    if (!Ctor) { setError('Voice typing is unavailable in this browser. You can still type your wish.'); return; }
+    if (!Ctor) {
+      setListening(false);
+      setError('Microphone input is unavailable in this browser. Tap Keyboard instead.');
+      return;
+    }
     try {
       const mic = new Ctor();
       recognition.current = mic;
@@ -67,72 +92,92 @@ export function SantaWishlist({ child, wishes, onAdd, onFavorite, onRemove }: {
         const heard = Array.from(event.results).map(x => x[0]?.transcript || '').join(' ').trim();
         if (heard) { setName(heard.slice(0, 100)); setReview(true); setError(''); }
       };
-      mic.onerror = event => { setError('Microphone: ' + event.error + '. Try typing instead.'); setListening(false); };
+      mic.onerror = event => { setError('Microphone: ' + event.error + '. Try Keyboard instead.'); setListening(false); };
       mic.onend = () => setListening(false);
       mic.start();
       setListening(true);
-    } catch { setError('The microphone could not be started. Try typing your wish.'); setListening(false); }
+    } catch {
+      setListening(false);
+      setError('The microphone could not be started. Tap Keyboard instead.');
+    }
+  }
+  function cancelEntry() {
+    if (!nativeChristmas()) recognition.current?.stop();
+    setListening(false);
+    setEntryMode(null);
+    setName('');
+    setReview(false);
+    setError('');
   }
   async function submit(event: FormEvent) {
     event.preventDefault();
     if (!name.trim()) { setError('Tell Santa what you wish for!'); return; }
     setSaving(true); setError('');
     try {
-      await onAdd(name.trim(), icon);
-      setName(''); setIcon('🎁'); setReview(false);
+      await onAdd(name.trim(), '🎁');
+      setName('');
+      setReview(false);
+      setEntryMode(null);
     } catch (e) { setError(e instanceof Error ? e.message : 'Could not save wish.'); }
     finally { setSaving(false); }
   }
+
   return (
-    <section>
-      <div className="content-heading"><span className="eyebrow">LETTERS TO THE NORTH POLE</span><h2>Santa’s Wish List</h2>
-        <p>{child} can tell Santa a wish, check what is already on the list, and change it anytime.</p>
+    <section className="wishlist-simplified">
+      <div className="content-heading">
+        <span className="eyebrow">LETTERS TO THE NORTH POLE</span>
+        <h2>Santa’s Wish List</h2>
+        <p>How would you like to tell Santa what you want?</p>
       </div>
-      <div className="wishlist-layout">
-        <div className="wishlist-form-card">
-          <img className="santa-portrait" src="./santa.svg" alt="Smiling Santa Claus" />
-          <h3>Dear Santa…</h3><p>What would you love for Christmas?</p>
-          <form onSubmit={submit}>
-            <label htmlFor="wish-name">My Christmas wish</label>
-            <div className="voice-input">
-              <input id="wish-name" value={name} maxLength={100} placeholder="I would love…"
-                onChange={e => { setName(e.target.value); setError(''); setReview(false); }} />
-              <button className={listening ? 'mic-button recording' : 'mic-button'} type="button" onClick={listening ? () => { if (!nativeChristmas()) recognition.current?.stop(); } : startMic}
-                aria-label={listening ? 'Stop listening' : 'Say your Christmas wish'} aria-pressed={listening}>{listening ? '⏹' : '🎤'}</button>
-            </div>
-            {listening && <p className="inline-feedback" role="status">Listening… say your wish!</p>}
-            {review && <p className="inline-feedback" role="status">I heard: “{name}”. Check it before adding!</p>}
-            <span className="field-label">Pick a picture</span>
-            <div className="icon-picker">
-              {['🎁','🧸','🎨','📚','🧩','🎮','⚽','🚗'].map(choice =>
-                <button type="button" key={choice} aria-label={'Pick ' + choice} aria-pressed={icon === choice}
-                  className={'icon-choice ' + (icon === choice ? 'selected' : '')} onClick={() => setIcon(choice)}>{choice}</button>)}
-            </div>
-            {error && <p className="form-error" role="alert">{error}</p>}
-            <button className="action full" type="submit" disabled={saving}>{saving ? 'Saving…' : '🎁 Add to my list'}</button>
-          </form>
-          <div className="idea-divider">Or try an idea</div>
-          <div className="wish-ideas">{WISH_IDEAS.map(idea =>
-            <button key={idea.name} disabled={saving} onClick={async () => {
-              setSaving(true);
-              try { await onAdd(idea.name, idea.icon); setError(''); }
-              catch (e) { setError(e instanceof Error ? e.message : 'Could not save wish.'); }
-              finally { setSaving(false); }
-            }}><span>{idea.icon}</span>{idea.name}<b>+</b></button>)}</div>
+      <div className="wishlist-entry-card">
+        <div className="wishlist-methods" role="group" aria-label="Choose how to add a wish">
+          <button type="button" className={'wishlist-method keyboard' + (entryMode === 'keyboard' ? ' selected' : '')}
+            aria-pressed={entryMode === 'keyboard'} onClick={chooseKeyboard} disabled={saving}>
+            <span className="wishlist-method-icon" aria-hidden="true">⌨️</span>
+            <strong>Keyboard</strong><small>Type a wish</small>
+          </button>
+          <button type="button" className={'wishlist-method microphone' + (entryMode === 'microphone' ? ' selected' : '') + (listening ? ' recording' : '')}
+            aria-pressed={entryMode === 'microphone'} onClick={startMic} disabled={saving}>
+            <span className="wishlist-method-icon" aria-hidden="true">🎤</span>
+            <strong>Microphone</strong><small>{listening ? 'Listening…' : 'Say a wish'}</small>
+          </button>
         </div>
-        <div className="wish-list-card">
-          <div className="section-row"><div><h3>🎄 {child}’s wishes</h3><p>{wishes.length} wishes so far</p></div></div>
-          {wishes.length === 0 ? <div className="empty-wishes"><div>🎅</div><strong>No wishes yet!</strong><p>Add your first wish to get started.</p></div> :
-            <div className="wish-items">{wishes.map(wish =>
-              <div className="wish-item" key={wish.id}>
-                <span className="wish-emoji">{wish.icon}</span><span className="wish-name">{wish.name}{wish.favorite && <small>⭐ Top wish</small>}</span>
-                <button className={'small-icon ' + (wish.favorite ? 'hearted' : '')} aria-label={'Favorite ' + wish.name} aria-pressed={wish.favorite}
-                  onClick={() => onFavorite(wish).catch(e => setError(String(e)))}>★</button>
-                <button className="small-icon remove" aria-label={'Remove ' + wish.name}
-                  onClick={() => { if (confirm('Remove ' + wish.name + '?')) onRemove(wish).catch(e => setError(String(e))); }}>×</button>
-              </div>)}</div>}
-          <p className="storage-note">☁️ Saved to the family’s shared Christmas list. Grown-up gift purchases are kept private.</p>
-        </div>
+        {listening && <p className="inline-feedback" role="status">
+          Listening… say your wish! {nativeChristmas() ? 'Finish speaking in the microphone prompt.' : ''}
+        </p>}
+        {entryMode === 'microphone' && review && <p className="inline-feedback" role="status">
+          I heard: “{name}”. Check it before saving!
+        </p>}
+        {(entryMode === 'keyboard' || review) && <form className="wishlist-draft" onSubmit={submit}>
+          <label htmlFor="wish-name">{review ? 'Check your wish' : 'Type your Christmas wish'}</label>
+          <input ref={keyboardInput} id="wish-name" value={name} maxLength={100}
+            placeholder="I would love…" autoComplete="off"
+            onChange={e => { setName(e.target.value); setError(''); }} />
+          <div className="wishlist-draft-actions">
+            <button className="action" type="submit" disabled={saving || !name.trim()}>
+              {saving ? 'Saving…' : '🎁 Add to my list'}
+            </button>
+            <button className="action secondary" type="button" onClick={cancelEntry} disabled={saving}>Cancel</button>
+          </div>
+        </form>}
+        {error && <p className="form-error" role="alert">{error}</p>}
+      </div>
+
+      <div className="wish-list-card wishlist-current-list">
+        <div className="section-row"><div><h3>🎄 {child}’s wishes</h3><p>{wishes.length} wishes so far</p></div></div>
+        {wishes.length === 0 ? <div className="empty-wishes"><div>🎅</div>
+          <strong>No wishes yet!</strong><p>Tap Keyboard or Microphone to add your first wish.</p></div> :
+          <div className="wish-items">{wishes.map(wish =>
+            <div className="wish-item" key={wish.id}>
+              <span className="wish-emoji">{wish.icon}</span>
+              <span className="wish-name">{wish.name}{wish.favorite && <small>⭐ Top wish</small>}</span>
+              <button type="button" className={'small-icon ' + (wish.favorite ? 'hearted' : '')}
+                aria-label={'Favorite ' + wish.name} aria-pressed={wish.favorite}
+                onClick={() => onFavorite(wish).catch(e => setError(String(e)))}>★</button>
+              <button type="button" className="small-icon remove" aria-label={'Remove ' + wish.name}
+                onClick={() => { if (confirm('Remove ' + wish.name + '?')) onRemove(wish).catch(e => setError(String(e))); }}>×</button>
+            </div>)}</div>}
+        <p className="storage-note">☁️ Saved to the family’s shared Christmas list. Grown-up gift purchases are kept private.</p>
       </div>
     </section>
   );
