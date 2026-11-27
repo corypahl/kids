@@ -2,7 +2,7 @@ import { useState } from 'react';
 import type { CSSProperties, MouseEvent } from 'react';
 import type { Tab } from './data';
 
-export type VillageDestination = { tab: Tab; category?: 'All' | 'Create' | 'Play' | 'Kindness' | 'Family'; game?: 'elf' | 'snowman' };
+export type VillageDestination = { tab: Tab; category?: 'All' | 'Create' | 'Play' | 'Kindness' | 'Family' };
 
 type VillageStop = {
   id: string;
@@ -18,16 +18,15 @@ type VillageStop = {
 };
 
 export const VILLAGE_STOPS: VillageStop[] = [
-  { id: 'santa', label: "Santa's Workshop", icon: '🎅', description: 'Tell Santa your wishes', x: 16, y: 57, mobileX: 25, mobileY: 39, destination: { tab: 'wishlist' } },
+  { id: 'santa', label: "Santa's Workshop", icon: '🎅', description: 'Watch the North Pole livestream', x: 16, y: 57, mobileX: 25, mobileY: 39, destination: { tab: 'workshop' } },
   { id: 'toys', label: 'Toy Factory', icon: '🎮', description: 'Play Christmas games', x: 38, y: 51, mobileX: 75, mobileY: 39, destination: { tab: 'games' } },
-  { id: 'elf-studio', label: 'Elf Design Studio', icon: '🧝', description: 'Dress up your own elf', x: 36, y: 32, mobileX: 25, mobileY: 23, destination: { tab: 'games', game: 'elf' } },
-  { id: 'snowman-garden', label: 'Snowman Garden', icon: '⛄', description: 'Build and style a snowman', x: 82, y: 31, mobileX: 75, mobileY: 23, destination: { tab: 'games', game: 'snowman' } },
+  { id: 'studio', label: "Mrs. Claus's Design Studio", icon: '🎨', description: 'Decorate cookies, elves, snowmen and gingerbread', x: 36, y: 32, mobileX: 25, mobileY: 23, destination: { tab: 'studio' } },
+  { id: 'mailbox', label: "Santa's Mailbox", icon: '💌', description: 'Make your wish list for Santa', x: 82, y: 31, mobileX: 75, mobileY: 23, destination: { tab: 'wishlist' } },
   { id: 'advent', label: 'Advent Tree', icon: '🎄', description: 'Open a daily surprise', x: 58, y: 61, mobileX: 25, mobileY: 55, advent: true },
-  { id: 'glitter', label: "Glitter's Cottage", icon: '📸', description: 'Discover Glitter’s diary', x: 78, y: 56, mobileX: 75, mobileY: 55, destination: { tab: 'diary' } },
-  { id: 'bakery', label: 'Cookie Bakery', icon: '🍪', description: 'Decorate a cookie', x: 27, y: 87, mobileX: 25, mobileY: 71, destination: { tab: 'bakery' } },
+  { id: 'glitter', label: "Glitter's Cottage", icon: '📸', description: "Discover Glitter's diary", x: 78, y: 56, mobileX: 75, mobileY: 55, destination: { tab: 'diary' } },
   { id: 'reindeer', label: 'Reindeer Barn', icon: '🦌', description: 'Feed the reindeer', x: 65, y: 87, mobileX: 75, mobileY: 71, destination: { tab: 'reindeer' } },
-  { id: 'crafts', label: 'Craft Cabin', icon: '🎨', description: 'Try a Christmas craft', x: 87, y: 87, mobileX: 25, mobileY: 87, destination: { tab: 'activities', category: 'Create' } },
-  { id: 'post', label: 'Elf Post Office', icon: '💌', description: 'Spread some kindness', x: 90, y: 42, mobileX: 75, mobileY: 87, destination: { tab: 'activities', category: 'Kindness' } },
+  { id: 'lodge', label: 'Adventure Lodge', icon: '⭐', description: 'Explore Christmas activities and craft ideas', x: 27, y: 87, mobileX: 25, mobileY: 71, destination: { tab: 'activities', category: 'All' } },
+  { id: 'post', label: 'Elf Post Office', icon: '💚', description: 'Spread some kindness', x: 90, y: 42, mobileX: 75, mobileY: 87, destination: { tab: 'activities', category: 'Kindness' } },
 ];
 
 type HouseProps = { x: number; y: number; wall: string; roof: string; door: string; window: string; large?: boolean };

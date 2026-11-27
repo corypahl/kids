@@ -5,8 +5,8 @@ import type { ChildId, Tab } from './data';
 import { familyToday, nativeChristmas, readFamilyKey, requestApi, storeFamilyKey } from './api';
 import type { VillageState, Wish } from './api';
 import { AdventCalendar, GlitterDiary, SantaWishlist } from './Features';
-import { CookieBakery, ReindeerBarn, VillageHome } from './Village';
-import { CharacterCreator } from './CreatorGames';
+import { ReindeerBarn, VillageHome } from './Village';
+import { MrsClausStudio, SantaWorkshop } from './Studio';
 import { DeviceSettings, readDeviceChild } from './DeviceSettings';
 import type { VillageDestination } from './Village';
 
@@ -192,31 +192,26 @@ function TriviaGame() {
   );
 }
 
-type GameId = 'memory' | 'counting' | 'trivia' | 'elf' | 'snowman';
-function Games({ game, setGame, child }: {
-  game: GameId; setGame: (game: GameId) => void; child: ChildId;
-}) {
-  return (
-    <section>
-      <div className="content-heading"><span className="eyebrow">SANTA’S ARCADE</span><h2>Let’s play!</h2><p>Choose a game. Everyone can join in.</p></div>
-      <div className="game-picker">
-        {([
-          ['memory', '🎄', 'Picture Match', 'Flip and find pairs'],
-          ['counting', '🎁', 'Count & Play', 'Great for little elves'],
-          ['trivia', '🔔', 'Christmas Quiz', 'Fun holiday questions'],
-          ['elf', '🧝', 'Elf Creator', 'Design your own elf'],
-          ['snowman', '⛄', 'Snowman Creator', 'Build a snow friend'],
-        ] as const).map(([id, icon, label, desc]) => (
-          <button key={id} onClick={() => setGame(id)} className={'game-tile ' + (game === id ? 'active' : '')}>
-            <span className="game-tile-icon">{icon}</span><strong>{label}</strong><small>{desc}</small>
-          </button>
-        ))}
-      </div>
-      {game === 'memory' ? <MemoryGame /> : game === 'counting' ? <CountingGame /> :
-        game === 'trivia' ? <TriviaGame /> :
-        <CharacterCreator key={game + '-' + child} kind={game} child={child} />}
-    </section>
-  );
+type GameId = 'memory' | 'counting' | 'trivia';
+function Games({ game, setGame }: { game: GameId; setGame: (game: GameId) => void }) {
+  return <section>
+    <div className="content-heading">
+      <span className="eyebrow">🎮 THE TOY FACTORY</span>
+      <h2>Let’s play!</h2><p>Choose a Christmas game to play.</p>
+    </div>
+    <div className="game-picker">
+      {([
+        ['memory', '🎄', 'Picture Match', 'Flip and find pairs'],
+        ['counting', '🎁', 'Count & Play', 'Great for little elves'],
+        ['trivia', '🔔', 'Christmas Quiz', 'Fun holiday questions'],
+      ] as const).map(([id, icon, label, desc]) =>
+        <button type="button" key={id} onClick={() => setGame(id)}
+          className={'game-tile ' + (game === id ? 'active' : '')} aria-pressed={game === id}>
+          <span className="game-tile-icon">{icon}</span><strong>{label}</strong><small>{desc}</small>
+        </button>)}
+    </div>
+    {game === 'memory' ? <MemoryGame /> : game === 'counting' ? <CountingGame /> : <TriviaGame />}
+  </section>;
 }
 
 function Activities({ child, completed, toggle, initialCategory }: {
@@ -365,7 +360,6 @@ export default function App() {
     await reload(child);
   }
   const visit = (destination: VillageDestination) => {
-    if (destination.game) setGame(destination.game);
     if (destination.tab === 'activities') setActivityCategory(destination.category || 'All');
     setTab(destination.tab);
   };
@@ -407,13 +401,14 @@ export default function App() {
         {child && tab === 'home' && <Home days={untilChristmas} child={active.name} childId={child}
           opened={state.opened} ready={isReady} onVisit={visit} onOpen={openAdvent}
           onSettings={() => setSettingsOpen(true)} />}
-        {child && tab === 'games' && <Games game={game} setGame={setGame} child={child} />}
+        {child && tab === 'games' && <Games game={game} setGame={setGame} />}
         {child && tab === 'activities' && isReady && <Activities child={active.name} completed={state.completed}
           toggle={id => void toggleActivity(id)} initialCategory={activityCategory} />}
         {child && tab === 'wishlist' && isReady && <SantaWishlist child={active.name} wishes={state.wishes}
           onAdd={addWish} onFavorite={wish => changeWish(wish)} onRemove={wish => changeWish(wish, true)} />}
         {child && tab === 'diary' && isReady && <GlitterDiary child={child} ready={isReady} />}
-        {child && tab === 'bakery' && <CookieBakery />}
+        {child && tab === 'studio' && <MrsClausStudio child={child} />}
+        {child && tab === 'workshop' && <SantaWorkshop />}
         {child && tab === 'reindeer' && <ReindeerBarn />}
       </main>
       {!child && <div className="device-profile-unassigned"><h2>⚙️ Grown-up setup</h2><p>Choose this tablet’s Christmas Village profile to get started.</p></div>}
