@@ -1,5 +1,5 @@
 /* Mrs. Claus's child-first creative hub and Santa's livestream. */
-.mrs-claus-studio,.santa-workshop{width:min(1240px,100%);margin:0 auto;padding-bottom:32px}
+.elf-design-school,.santa-workshop{width:min(1240px,100%);margin:0 auto;padding-bottom:32px}
 .studio-heading{display:flex;gap:17px;align-items:center;margin:12px 0 21px;padding:20px 26px;background:linear-gradient(115deg,#2e7865,#407c8c);border-radius:25px;color:#fff;border:3px solid #e5f3d7;box-shadow:0 10px 28px #1a4d4522}
 .studio-heading-art{font-size:clamp(2.8rem,6vw,4.5rem);white-space:nowrap}
 .studio-heading .eyebrow{color:#ffe7a9;font-size:.75rem}

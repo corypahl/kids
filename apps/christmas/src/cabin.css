@@ -1,0 +1,19 @@
+/* Mrs. Claus's Cabin combines all Advent activities and kindness projects. */
+.mrs-claus-cabin{max-width:1180px;margin:0 auto 35px}
+.cabin-banner{display:flex;align-items:center;gap:24px;padding:19px 24px;border:4px solid #f4dfb2;border-radius:26px;background:linear-gradient(120deg,#f5fff0,#fff5df);box-shadow:0 10px 25px #386d5231;color:#326b55}
+.cabin-banner .eyebrow{font-size:.73rem;color:#ae6557}
+.cabin-banner h1{font:900 clamp(1.9rem,4vw,2.9rem)/1.06 "Baloo 2",system-ui,sans-serif;color:#306952;margin:4px 0 7px}
+.cabin-banner p{color:#627f69;margin:0;font-size:1.02rem}
+.cabin-icon{font-size:clamp(3rem,6vw,5rem);flex:0 0 auto;white-space:nowrap}
+.cabin-corners{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px;margin:17px 0 20px}
+.cabin-corners button{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:116px;gap:5px;padding:12px 16px;border:3px solid #e3eada;border-radius:21px;background:#fffdf4;color:#3d6b56;box-shadow:0 5px 0 #becfb4;touch-action:manipulation}
+.cabin-corners button.selected{background:#e4f9e9;border-color:#38946a;color:#286847;box-shadow:0 5px 0 #8fc6a6}
+.cabin-corners button span{font-size:2.4rem;line-height:1.08}
+.cabin-corners button strong{font:900 clamp(1.06rem,2vw,1.4rem)/1.15 "Baloo 2",system-ui,sans-serif}
+.cabin-corners button small{font-size:.8rem;color:#64816b}
+.cabin-corners button:focus-visible{outline:4px solid #f5c86f;outline-offset:3px}
+.mrs-claus-cabin>.content-heading{margin:6px 0}
+.mrs-claus-cabin .content-heading{margin-top:6px;margin-bottom:13px}
+.mrs-claus-cabin .content-heading h2{font-size:1.7rem}
+@media(max-width:600px){.cabin-banner{padding:13px 15px;gap:12px;border-radius:17px}.cabin-icon{font-size:2.8rem}.cabin-banner h1{font-size:1.7rem}.cabin-banner p{font-size:.86rem}.cabin-corners{gap:8px;margin:11px 0}.cabin-corners button{min-height:90px;padding:7px;border-radius:15px}.cabin-corners button span{font-size:1.8rem}.cabin-corners button strong{font-size:1rem}.cabin-corners button small{font-size:.72rem}}
+@media(orientation:landscape) and (min-width:700px) and (max-height:650px){.cabin-banner{padding:8px 17px;gap:15px;border-radius:17px}.cabin-banner h1{font-size:1.8rem;margin:0}.cabin-banner p{font-size:.84rem}.cabin-icon{font-size:2.5rem}.cabin-corners{gap:10px;margin:9px 0 11px}.cabin-corners button{min-height:72px;padding:6px}.cabin-corners button span{font-size:1.6rem}.cabin-corners button strong{font-size:1.06rem}.cabin-corners button small{font-size:.73rem}}
