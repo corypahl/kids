@@ -45,7 +45,7 @@ export function NorthPolePassport({ child, name, onVisit }: {
     <div className="passport-daily">
       <div><span className="eyebrow">TODAY'S NORTH POLE MISSION</span>
         <h2>{challenge.icon} {challenge.name}</h2>
-        <p>{challenge.detail}. ${stamps.includes(challenge.id)?'You already earned this stamp—have fun doing it again!':'Complete it to collect your stamp.'}</p>
+        <p>{challenge.detail}. {stamps.includes(challenge.id)?'You already earned this stamp—have fun doing it again!':'Complete it to collect your stamp.'}</p>
       </div>
       <button className="action" type="button" onClick={()=>onVisit(challengeTab)}>Go to activity →</button>
     </div>
