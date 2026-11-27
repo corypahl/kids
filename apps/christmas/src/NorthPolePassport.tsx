@@ -21,6 +21,11 @@ export function NorthPolePassport({ child, name, onVisit }: {
   const [loading,setLoading]=useState(true);
   const [error,setError]=useState('');
   const year=Number(familyToday().slice(0,4));
+  const day=familyToday();
+  const challenge=PASSPORT_STAMPS[(Number(day.slice(8))+Number(day.slice(5,7)))%6];
+  const challengeTab: 'games' | 'studio' | 'activities' =
+    ['present-bounce','delivery-run','elf-coding'].includes(challenge.id) ? 'games' :
+    challenge.id === 'around-the-world' ? 'activities' : 'studio';
   useEffect(()=>{
     let live=true;
     requestApi<{year:number;stamps:string[]}>('passport?child='+child)
@@ -36,6 +41,13 @@ export function NorthPolePassport({ child, name, onVisit }: {
       <strong>{loading?'Loading passport…':stamps.length+' / '+PASSPORT_STAMPS.length+' stamps earned'}</strong>
       <div className="progress-track"><div style={{width:(stamps.length/PASSPORT_STAMPS.length*100)+'%'}}/></div>
       <p>Every new activity is another stamp. Collect them all before the season ends!</p>
+    </div>
+    <div className="passport-daily">
+      <div><span className="eyebrow">TODAY'S NORTH POLE MISSION</span>
+        <h2>{challenge.icon} {challenge.name}</h2>
+        <p>{challenge.detail}. ${stamps.includes(challenge.id)?'You already earned this stamp—have fun doing it again!':'Complete it to collect your stamp.'}</p>
+      </div>
+      <button className="action" type="button" onClick={()=>onVisit(challengeTab)}>Go to activity →</button>
     </div>
     {error&&<p className="form-error" role="alert">{error}</p>}
     <div className="passport-stamps">
