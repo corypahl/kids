@@ -64,7 +64,7 @@ function Pine({ x, y, size = 1 }: { x: number; y: number; size?: number }) {
 }
 
 function VillageIllustration() {
-  return <svg className="village-scene" viewBox="0 0 1200 690" role="img" aria-label="A colorful snowy Christmas village with Santa's workshop, a toy factory, Glitter's cottage, bakery, reindeer barn, craft cabin, post office, and an Advent tree, with an Elf Design Studio and Snowman Garden." preserveAspectRatio="xMidYMid meet">
+  return <svg className="village-scene" viewBox="0 0 1200 690" role="img" aria-label="A colorful snowy Christmas village with Santa's workshop, a toy factory, Glitter's cottage, bakery, reindeer barn, craft cabin, post office, and an Advent tree, with an Elf Design Studio and Snowman Garden." preserveAspectRatio="none">
     <defs>
       <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
         <stop offset="0" stopColor="#215a87"/><stop offset=".61" stopColor="#65b4c1"/><stop offset="1" stopColor="#d5f2e4"/>
