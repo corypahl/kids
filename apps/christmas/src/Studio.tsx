@@ -82,7 +82,7 @@ export function SantaWorkshop() {
       <p>This is a YouTube video. Playback depends on the livestream being active and the channel allowing embedding. YouTube controls are provided by YouTube.</p>
       <a href={VIDEO_URL} rel="noopener noreferrer">Having trouble? Watch on YouTube ↗</a>
       <div className="santa-tracker-link">
-        <strong>🛷 ${christmasEve ? 'Santa is on his way!' : 'Track Santa on Christmas Eve'}</strong>
+        <strong>🛷 {christmasEve ? 'Santa is on his way!' : 'Track Santa on Christmas Eve'}</strong>
         <p>Open Google’s official Santa Tracker to follow the Christmas Eve journey. The live map is operated by Google, not this app.</p>
         <a href="https://santatracker.google.com/" target="_blank" rel="noopener noreferrer">🌍 Open Santa Tracker</a>
       </div>
