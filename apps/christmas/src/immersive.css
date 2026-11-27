@@ -1,0 +1,299 @@
+/* Full-bleed Christmas world. The village itself is the home screen. */
+.immersive-shell{
+  background:#d8f0e7;
+  overflow:clip;
+}
+.immersive-shell > .immersive-main{
+  position:relative;
+  max-width:none;
+  width:100%;
+  padding:0;
+  margin:0;
+  min-height:100dvh;
+}
+.immersive-shell .village-experience{
+  max-width:none;
+  width:100%;
+  margin:0;
+}
+.immersive-shell .village-home,
+.immersive-shell .village-frame,
+.immersive-shell .village-viewport{
+  margin:0;
+  width:100%;
+  max-width:none;
+  padding:0;
+  border:0;
+  border-radius:0;
+  box-shadow:none;
+  background:transparent;
+}
+.immersive-shell .village-viewport{
+  overflow:visible;
+}
+.immersive-shell .village-canvas{
+  position:relative;
+  width:100%;
+  min-width:0;
+  min-height:0;
+  aspect-ratio:1200 / 690;
+  background:#2d6b91;
+  isolation:isolate;
+}
+.immersive-shell .village-scene{
+  position:absolute;
+  inset:0;
+  display:block;
+  width:100%;
+  height:100%;
+  pointer-events:none;
+}
+.immersive-shell .village-scene-portrait{
+  display:none;
+}
+.immersive-shell .village-overlay{
+  position:absolute;
+  z-index:5;
+  inset:0 0 auto;
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:14px;
+  padding:clamp(15px,2.3vw,34px);
+  background:linear-gradient(180deg,rgba(8,40,62,.88),rgba(13,58,82,.55) 68%,transparent);
+  pointer-events:none;
+}
+.immersive-shell .village-intro{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  gap:4px;
+  flex:1;
+  min-width:0;
+  max-width:560px;
+  border:0;
+  border-radius:0;
+  background:transparent;
+  padding:0;
+  box-shadow:none;
+  color:#fff;
+}
+.immersive-shell .village-intro:before{content:none}
+.immersive-shell .village-kicker{
+  font-weight:900;
+  font-size:clamp(.62rem,.9vw,.87rem);
+  color:#ffe3a9;
+  letter-spacing:.13em;
+  text-shadow:0 2px 3px #1644617d;
+}
+.immersive-shell .village-intro h1{
+  margin:0;
+  color:#fff9e9;
+  font-size:clamp(1.7rem,3.2vw,3.2rem);
+  line-height:1.06;
+  text-shadow:0 3px 8px #12384dd6;
+  text-wrap:balance;
+}
+.immersive-shell .village-intro h1 span{
+  color:#ffe1a3;
+}
+.immersive-shell .village-intro p{
+  font-size:clamp(.78rem,1.2vw,1rem);
+  font-weight:900;
+  color:#fff7e6;
+  margin:1px 0 0;
+  text-shadow:0 2px 6px #12384d;
+}
+.immersive-shell .village-overlay-controls{
+  display:flex;
+  flex:0 0 auto;
+  flex-direction:column;
+  align-items:flex-end;
+  gap:9px;
+  pointer-events:auto;
+}
+.immersive-shell .village-hud-settings{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  min-height:48px;
+  padding:8px 14px;
+  border:2px solid #f9efd4b3;
+  border-radius:999px;
+  background:#174c5bd9;
+  color:#fff9eb;
+  font-weight:900;
+  box-shadow:0 3px 9px #0c2e477a;
+  backdrop-filter:blur(8px);
+}
+.immersive-shell .village-hud-settings:hover{
+  background:#1e6971;
+}
+.immersive-shell .village-countdown{
+  flex:0 0 auto;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:0;
+  min-width:0;
+  width:91px;
+  padding:7px 8px 8px;
+  border:2px solid #fff0c9;
+  border-radius:17px;
+  background:#ce4355;
+  color:white;
+  box-shadow:0 5px 0 #842a4c,0 8px 20px #0d2d4d70;
+  text-align:center;
+}
+.immersive-shell .village-countdown strong{
+  font:900 2.45rem/1 'Baloo 2',system-ui,sans-serif;
+  color:#fff9e8;
+}
+.immersive-shell .village-countdown small{
+  display:block;
+  font-size:.67rem;
+  color:#fff8eb;
+  font-weight:900;
+  line-height:1.16;
+  text-transform:uppercase;
+  white-space:normal;
+  letter-spacing:.06em;
+}
+.immersive-shell .village-spot{
+  z-index:4;
+  width:auto;
+  max-width:148px;
+  min-width:92px;
+  min-height:62px;
+  padding:6px 11px;
+  gap:0;
+  border:3px solid #fff8de;
+  border-radius:19px;
+  background:linear-gradient(160deg,#fffdf1ed,#f5f6e5ef);
+  color:#244d48;
+  box-shadow:0 5px 0 #52878a99,0 8px 17px #1b465b55;
+  text-shadow:none;
+  backdrop-filter:blur(4px);
+}
+.immersive-shell .village-spot:hover,
+.immersive-shell .village-spot:focus-visible{
+  z-index:7;
+  transform:translate(-50%,-58%) scale(1.045);
+}
+.immersive-shell .village-spot:focus-visible,
+.immersive-shell .village-hud-settings:focus-visible{
+  outline:4px solid #fbc95f;
+  outline-offset:4px;
+}
+.immersive-shell .village-spot-label{
+  font-size:clamp(.73rem,1.18vw,.95rem);
+  line-height:1.15;
+  text-wrap:balance;
+}
+.immersive-shell .village-spot-icon{font-size:clamp(1.4rem,2vw,1.85rem)}
+.immersive-shell .village-spot-santa{background:#fff0e5ed}
+.immersive-shell .village-spot-glitter{background:#f8e5ffed}
+.immersive-shell .village-spot-advent{background:#fff5bced}
+.immersive-shell .village-spot-toys{background:#dff5ffed}
+.immersive-shell .village-spot-bakery{background:#ffe8d8ed}
+.immersive-shell .village-spot-reindeer{background:#fff1deed}
+.immersive-shell .village-spot-crafts{background:#e8f5ffed}
+.immersive-shell .village-spot-post{background:#f6e8ffed}
+.immersive-shell .village-scroll-hint{
+  display:none;
+  position:absolute;
+  z-index:6;
+  left:50%;
+  top:166px;
+  transform:translateX(-50%);
+  padding:5px 12px;
+  border:1px solid #f6ecd799;
+  border-radius:999px;
+  color:#fffefa;
+  background:#164e62b7;
+  font-size:.77rem;
+  font-weight:900;
+  white-space:nowrap;
+  pointer-events:none;
+}
+.immersive-shell .village-scroll-hint span{
+  display:inline-block;
+  animation:village-point-down 2.5s ease-in-out infinite;
+}
+.immersive-shell #christmas-advent{
+  scroll-margin-top:0;
+  padding:clamp(22px,5vw,52px) max(12px,calc((100vw - 1180px) / 2)) 60px;
+  background:
+    radial-gradient(circle at 14% 5%,#ffffffaa 0 2px,transparent 3px),
+    radial-gradient(circle at 83% 20%,#ffffffb0 0 3px,transparent 4px),
+    linear-gradient(180deg,#eef9ea 0%,#f4fbf0 42%,#fff6e5 100%);
+  min-height:60dvh;
+}
+.immersive-shell .advent-section{
+  margin:0 auto;
+  border-radius:28px;
+  box-shadow:0 12px 35px #24543c24;
+}
+.immersive-shell .family-connect,
+.immersive-shell .form-error{
+  position:relative;
+  z-index:8;
+  max-width:750px;
+  margin:12px auto;
+}
+@keyframes village-point-down{
+  0%,100%{transform:translateY(0)}
+  50%{transform:translateY(5px)}
+}
+@media(max-width:900px){
+  .immersive-shell .village-canvas{
+    width:100%;
+    aspect-ratio:440 / 1400;
+  }
+  .immersive-shell .village-scene-landscape{display:none}
+  .immersive-shell .village-scene-portrait{display:block}
+  .immersive-shell .village-spot{
+    left:var(--mobile-x)!important;
+    top:var(--mobile-y)!important;
+    width:clamp(103px,29vw,175px);
+    max-width:none;
+    min-width:0;
+    min-height:65px;
+    padding:6px 5px;
+    border-radius:17px;
+  }
+  .immersive-shell .village-spot-label{
+    font-size:clamp(.72rem,1.7vw,.94rem);
+  }
+  .immersive-shell .village-spot-icon{font-size:clamp(1.55rem,2.65vw,2rem)}
+  .immersive-shell .village-scroll-hint{display:block}
+  .immersive-shell .village-intro h1{
+    font-size:clamp(1.43rem,4.6vw,2.45rem);
+  }
+  .immersive-shell .village-overlay{
+    padding:clamp(15px,3vw,26px);
+  }
+}
+@media(max-width:570px){
+  .immersive-shell .village-overlay{gap:8px;padding:15px 12px 0}
+  .immersive-shell .village-intro{gap:4px;padding:0;max-width:70%}
+  .immersive-shell .village-kicker{font-size:.6rem;letter-spacing:.06em}
+  .immersive-shell .village-intro h1{font-size:clamp(1.5rem,5.7vw,2.05rem);line-height:1.05}
+  .immersive-shell .village-intro p{font-size:.77rem;line-height:1.2;max-width:200px}
+  .immersive-shell .village-hud-settings{font-size:1.12rem;min-width:46px;width:46px;padding:6px;border-radius:50%}
+  .immersive-shell .village-hud-settings span{display:none}
+  .immersive-shell .village-countdown{width:62px;min-height:67px;padding:5px 3px;border-radius:13px}
+  .immersive-shell .village-countdown strong{font-size:1.78rem}
+  .immersive-shell .village-countdown small{font-size:.52rem;letter-spacing:0}
+  .immersive-shell .village-scroll-hint{top:156px;font-size:.68rem}
+  .immersive-shell .village-spot{min-height:60px}
+  .immersive-shell .village-spot-label{font-size:clamp(.69rem,2.6vw,.82rem)}
+  .immersive-shell .village-spot-icon{font-size:1.6rem}
+  .immersive-shell #christmas-advent{padding:26px 11px 42px}
+  .immersive-shell .advent-section{border-radius:19px}
+}
+@media(prefers-reduced-motion:reduce){
+  .immersive-shell .village-scroll-hint span{animation:none}
+}
