@@ -261,13 +261,37 @@ function Home({ days, child, childId, opened, ready, onVisit, onOpen, onSettings
   onOpen: (day: number) => Promise<void>;
   onSettings: () => void;
 }) {
+  const [adventOpen, setAdventOpen] = useState(false);
+  const closeButton = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    if (!adventOpen) return;
+    closeButton.current?.focus();
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && !document.querySelector('.surprise-overlay')) {
+        setAdventOpen(false);
+        requestAnimationFrame(() => document.querySelector<HTMLButtonElement>('.village-spot-advent')?.focus());
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [adventOpen]);
+  function closeAdvent() {
+    setAdventOpen(false);
+    requestAnimationFrame(() => document.querySelector<HTMLButtonElement>('.village-spot-advent')?.focus());
+  }
   return <section className="village-experience">
     <VillageHome child={child} days={days} onSettings={onSettings}
-      onVisit={onVisit} onAdvent={() => document.getElementById('christmas-advent')?.scrollIntoView({ behavior: 'smooth', block: 'start' })} />
-    <div id="christmas-advent">
-      <AdventCalendar child={childId} opened={opened} onOpen={onOpen}
-        goTo={tab => onVisit({ tab })} enabled={ready} />
-    </div>
+      onVisit={onVisit} onAdvent={() => setAdventOpen(true)} />
+    {adventOpen && <div className="village-advent-backdrop">
+      <div className="village-advent-dialog" role="dialog" aria-modal="true" aria-labelledby="village-advent-title">
+        <div className="village-advent-bar">
+          <strong id="village-advent-title">🎄 Advent Tree</strong>
+          <button ref={closeButton} type="button" onClick={closeAdvent} aria-label="Close Advent Tree">✕ Close</button>
+        </div>
+        <AdventCalendar child={childId} opened={opened} onOpen={onOpen}
+          goTo={tab => { setAdventOpen(false); onVisit({ tab }); }} enabled={ready} />
+      </div>
+    </div>}
   </section>;
 }
 
