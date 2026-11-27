@@ -9,6 +9,8 @@ import './immersive.css';
 import './studio.css';
 import './naughty-nice.css';
 import './cabin.css';
+import './reindeer-arcade.css';
+import './fidget-maker.css';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

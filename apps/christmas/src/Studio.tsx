@@ -3,13 +3,15 @@ import type { ChildId } from './data';
 import { CharacterCreator } from './CreatorGames';
 import { CookieBakery } from './Village';
 import { GingerbreadDesigner } from './GingerbreadDesigner';
+import { FidgetMaker } from './FidgetMaker';
 
-type DesignMode = 'cookies' | 'snowmen' | 'elves' | 'gingerbread';
+type DesignMode = 'cookies' | 'snowmen' | 'elves' | 'gingerbread' | 'fidgets';
 const STATIONS: { id: DesignMode; icon: string; label: string; detail: string }[] = [
   { id: 'cookies', icon: '🍪', label: 'Cookies', detail: 'Icing and candy toppings' },
   { id: 'snowmen', icon: '⛄', label: 'Snowmen', detail: 'Hats, faces and scarves' },
   { id: 'elves', icon: '🧝', label: 'Elves', detail: 'Outfits and hairstyles' },
   { id: 'gingerbread', icon: '🎀', label: 'Gingerbread', detail: 'Create a cookie friend' },
+  { id: 'fidgets', icon: '🫧', label: 'Fidget Maker', detail: 'Stretch, squeeze and shake a squishy' },
 ];
 
 export function ElfDesignSchool({ child }: { child: ChildId }) {
@@ -20,7 +22,7 @@ export function ElfDesignSchool({ child }: { child: ChildId }) {
       <div>
         <span className="eyebrow">WELCOME TO THE NORTH POLE ART CLASS</span>
         <h1>Elf Design School</h1>
-        <p>The elves are ready to teach you! Create cookies, snowmen, elves, and gingerbread friends.</p>
+        <p>The elves are ready to teach you! Create cookies, characters and your own stretchy fidgets.</p>
       </div>
     </header>
     <nav className="studio-stations" aria-label="Choose a design activity">
@@ -39,6 +41,7 @@ export function ElfDesignSchool({ child }: { child: ChildId }) {
       <div className="studio-panel" hidden={station !== 'snowmen'}><CharacterCreator key={child + '-snowman'} kind="snowman" child={child}/></div>
       <div className="studio-panel" hidden={station !== 'elves'}><CharacterCreator key={child + '-elf'} kind="elf" child={child}/></div>
       <div className="studio-panel" hidden={station !== 'gingerbread'}><GingerbreadDesigner child={child}/></div>
+      <div className="studio-panel" hidden={station !== 'fidgets'}><FidgetMaker child={child} active={station === 'fidgets'}/></div>
     </div>
   </section>;
 }
