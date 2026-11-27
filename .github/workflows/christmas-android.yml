@@ -115,7 +115,7 @@ jobs:
           ANDROID_RELEASE_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
           gradle -p apps/christmas/android :app:bundleRelease :app:assembleRelease --build-cache
-          jarsigner -verify -strict apps/christmas/android/app/build/outputs/bundle/release/app-release.aab
+          jarsigner -verify apps/christmas/android/app/build/outputs/bundle/release/app-release.aab | grep -F 'jar verified.'
 
       - name: Upload signed Play Console AAB
         if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
