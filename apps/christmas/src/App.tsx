@@ -7,6 +7,7 @@ import type { VillageState, Wish } from './api';
 import { AdventCalendar, GlitterDiary, SantaWishlist } from './Features';
 import { CookieBakery, ReindeerBarn, VillageHome } from './Village';
 import { CharacterCreator } from './CreatorGames';
+import { DeviceSettings, readDeviceChild } from './DeviceSettings';
 import type { VillageDestination } from './Village';
 
 function daysTillChristmas() {
@@ -274,7 +275,8 @@ export default function App() {
   const [tab, setTab] = useState<Tab>('home');
   const [game, setGame] = useState<GameId>('memory');
   const [activityCategory, setActivityCategory] = useState<'All' | 'Create' | 'Play' | 'Kindness' | 'Family'>('All');
-  const [child, setChild] = useState<ChildId>('emma');
+  const [child, setChild] = useState<ChildId | null>(readDeviceChild);
+  const [settingsOpen, setSettingsOpen] = useState(() => readDeviceChild() === null);
   const [familyKey, setFamilyKey] = useState(readFamilyKey);
   const [keyDraft, setKeyDraft] = useState(familyKey);
   const [state, setState] = useState<VillageState>({ wishes: [], completed: [], opened: [] });
@@ -289,9 +291,9 @@ export default function App() {
   }, []);
   // Switching buildings should show each destination from its beginning.
   useEffect(() => { window.scrollTo(0, 0); }, [tab]);
-  const active = CHILDREN.find(item => item.id === child)!;
+  const active = CHILDREN.find(item => item.id === child) ?? CHILDREN[0];
 
-  async function reload(profile: ChildId = child, key: string = familyKey) {
+  async function reload(profile: ChildId = child ?? 'emma', key: string = familyKey) {
     const seq = ++sequence.current;
     if (!key) { setStatus(nativeApp ? 'error' : 'needs-key'); if (nativeApp) setError('This Android build is missing its family configuration. Ask a grown-up to install the signed testing release.'); return; }
     setStatus('loading');
@@ -304,7 +306,7 @@ export default function App() {
       setStatus('error'); setError(e instanceof Error ? e.message : 'Unable to connect to family storage.');
     }
   }
-  useEffect(() => { void reload(child, familyKey); }, [child, familyKey]);
+  useEffect(() => { if (child) void reload(child, familyKey); }, [child, familyKey]);
 
   async function connect(e: FormEvent) {
     e.preventDefault();
@@ -344,19 +346,17 @@ export default function App() {
       <div className="snowflakes" aria-hidden="true">❄︎ &nbsp; ✳ &nbsp; ❅ &nbsp; ✻ &nbsp; ❄︎</div>
       <header className="site-header">
         <a href="/" className="brand"><span className="brand-icon">🎄</span><span>Christmas <b>Village</b><small>part of Kids Hub</small></span></a>
-        <div className="profile-chooser">
-          <span>Who’s playing?</span>
-          <div className="profiles" role="group" aria-label="Choose child">
-            {CHILDREN.map(item => <button key={item.id}
-              className={'profile ' + item.color + (child === item.id ? ' active' : '')}
-              onClick={() => setChild(item.id)} aria-pressed={child === item.id}>
-              <span>{item.icon}</span>{item.name}</button>)}
-          </div>
-        </div>
+        {child && <div className="device-profile-indicator">
+          <span className="device-profile-name">{active.icon} {active.name}’s Christmas Village</span>
+          <button type="button" className="device-settings-button"
+            onClick={() => setSettingsOpen(true)} aria-label="Open parent settings">
+            ⚙️ Settings
+          </button>
+        </div>}
       </header>
       <main className="page-main" key={tab + child}>
         {tab !== 'home' && <button type="button" className="village-back" onClick={() => setTab('home')}>← Back to the village</button>}
-        {!isReady && <div className="family-connect">
+        {child && !isReady && <div className="family-connect">
           <h3>{nativeApp ? '🎄 Loading Christmas Village' : '🔒 Connect the family’s Christmas storage'}</h3>
           <p>{nativeApp ? 'Your wishes and Glitter’s Diary sync automatically in the Android app.' :
             'Wish lists, Glitter’s photos and recordings, and daily progress are private and shared between devices.'}</p>
@@ -372,21 +372,34 @@ export default function App() {
             {nativeApp && <button className="action secondary" onClick={() => void reload()}>Try again</button>}</>}
           {status === 'loading' && <p role="status">Loading family data…</p>}
         </div>}
-        {isReady && <div className="family-status"><span>☁️ Connected to your family lists</span>
+        {child && isReady && <div className="family-status"><span>☁️ Connected to your family lists</span>
           {!nativeApp && <button className="pill" onClick={() => { storeFamilyKey(''); setFamilyKey(''); setKeyDraft(''); setStatus('needs-key'); }}>Change family key</button>}
         </div>}
-        {isReady && error && <p className="form-error" role="alert">{error}</p>}
-        {tab === 'home' && <Home days={untilChristmas} child={active.name} childId={child}
+        {child && isReady && error && <p className="form-error" role="alert">{error}</p>}
+        {child && tab === 'home' && <Home days={untilChristmas} child={active.name} childId={child}
           opened={state.opened} ready={isReady} onVisit={visit} onOpen={openAdvent} />}
-        {tab === 'games' && <Games game={game} setGame={setGame} child={child} />}
-        {tab === 'activities' && isReady && <Activities child={active.name} completed={state.completed}
+        {child && tab === 'games' && <Games game={game} setGame={setGame} child={child} />}
+        {child && tab === 'activities' && isReady && <Activities child={active.name} completed={state.completed}
           toggle={id => void toggleActivity(id)} initialCategory={activityCategory} />}
-        {tab === 'wishlist' && isReady && <SantaWishlist child={active.name} wishes={state.wishes}
+        {child && tab === 'wishlist' && isReady && <SantaWishlist child={active.name} wishes={state.wishes}
           onAdd={addWish} onFavorite={wish => changeWish(wish)} onRemove={wish => changeWish(wish, true)} />}
-        {tab === 'diary' && isReady && <GlitterDiary child={child} ready={isReady} />}
-        {tab === 'bakery' && <CookieBakery />}
-        {tab === 'reindeer' && <ReindeerBarn />}
+        {child && tab === 'diary' && isReady && <GlitterDiary child={child} ready={isReady} />}
+        {child && tab === 'bakery' && <CookieBakery />}
+        {child && tab === 'reindeer' && <ReindeerBarn />}
       </main>
+      {!child && <div className="device-profile-unassigned"><h2>⚙️ Grown-up setup</h2><p>Choose this tablet’s Christmas Village profile to get started.</p></div>}
+      {settingsOpen && <DeviceSettings assignedChild={child}
+        onClose={child ? () => setSettingsOpen(false) : undefined}
+        onSave={profile => {
+          if (profile !== child) {
+            setState({ wishes: [], completed: [], opened: [] });
+            setStatus(familyKey ? 'loading' : 'needs-key');
+            setError('');
+          }
+          setChild(profile);
+          setTab('home');
+          setSettingsOpen(false);
+        }} />}
       <footer className="site-footer"><span>✨ Made for little Christmas helpers ✨</span><a href="/">← Back to Kids Hub</a></footer>
     </div>
   );

@@ -71,6 +71,9 @@ async function api(request, env, pathname, url) {
 
   if (path === '/status' && method === 'GET') return response({ ready: true });
 
+  // Parent-only check for changing a tablet's assigned child; no private data returned.
+  if (path === '/parent/verify' && method === 'GET') return response({ ok: true });
+
   if (path === '/state' && method === 'GET') {
     const child = url.searchParams.get('child');
     if (!validChild(child)) return fail('Invalid child profile.', 400);
