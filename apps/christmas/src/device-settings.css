@@ -1,0 +1,32 @@
+/* One child profile per tablet; changes are gated by the separate parent key. */
+.device-profile-indicator{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+.device-profile-name{font-weight:900;color:#315e4f;background:#e8f7e8;padding:10px 13px;border:1px solid #cce4d2;border-radius:14px;white-space:nowrap;font-size:.9rem}
+.device-settings-button{display:inline-flex;gap:6px;align-items:center;justify-content:center;border:2px solid #d4e6d9;background:#fff;color:#336b52;border-radius:14px;padding:10px 14px;font-size:.86rem;font-weight:900;min-height:46px}
+.device-settings-button:hover{background:#eaf7ec}
+.device-settings-overlay{position:fixed;inset:0;z-index:120;display:grid;place-items:center;overflow-y:auto;background:#0c3229bf;padding:16px}
+.device-settings-panel{background:linear-gradient(160deg,#fffef8,#fff3e4);border:5px solid #fff6db;border-radius:27px;width:min(590px,100%);max-height:calc(100dvh - 32px);overflow-y:auto;box-shadow:0 20px 70px #031a174f;padding:clamp(18px,3vw,34px)}
+.device-settings-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.device-settings-heading .eyebrow{margin-bottom:5px}
+.device-settings-heading h2{font-size:clamp(1.7rem,4vw,2.3rem);color:#275b46;margin:0 0 7px}
+.device-settings-heading p{font-size:.94rem;margin:0 0 17px}
+.device-settings-close{border:0;background:#f9e8d7;color:#835d4b;border-radius:12px;min-width:43px;min-height:43px;font-size:1.4rem}
+.device-settings-unlock{display:flex;flex-direction:column;gap:13px;padding:20px 17px;border-radius:20px;background:#fff;border:1px solid #eedfc9}
+.device-settings-lock{font-size:3rem;text-align:center}
+.device-settings-unlock label{font-weight:900;color:#3f684f;font-size:.96rem}
+.device-settings-unlock input{min-height:52px;padding:12px;border:2px solid #c6dfcd;border-radius:13px;width:100%;background:#fbfdfb}
+.device-settings-unlock .action,.device-settings-chooser>.action{align-self:flex-start;min-height:52px}
+.device-settings-unlock small{color:#7f8b7b;line-height:1.45}
+.device-settings-chooser h3{font-size:1.4rem;color:#285e4b;margin:6px 0 16px}
+.device-settings-children{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.device-settings-child{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;min-height:125px;background:white;border:3px solid #d7e6dc;border-radius:20px;color:#3a5f4d;padding:15px 7px}
+.device-settings-child>span:first-child{font-size:3rem}.device-settings-child strong{font-size:1.05rem}
+.device-settings-child.selected{background:#e8f7ed;border-color:#419b76}
+.device-settings-child.pink.selected{background:#fff0f6;border-color:#ca81a0}
+.device-settings-child.purple.selected{background:#f5eeff;border-color:#a885c9}
+.device-settings-child.blue.selected{background:#eef9ff;border-color:#6eaac9}
+.device-settings-selected{position:absolute;top:5px;right:8px;color:#267454;font-weight:900;font-size:1.4rem}
+.device-settings-help{font-size:.9rem;color:#637567;line-height:1.5;margin:15px 0}
+.device-settings-error{padding:12px 14px;border-radius:12px;background:#ffede7;color:#94413d;margin:15px 0 0;font-weight:900}
+.device-profile-unassigned{padding:55px 20px;text-align:center;color:#456b57}
+.device-profile-unassigned h2{color:#2c6552}
+@media(max-width:650px){.site-header{flex-wrap:wrap}.device-profile-indicator{width:100%;justify-content:space-between}.device-profile-name{font-size:.78rem;padding:9px 11px}.device-settings-button{font-size:.8rem;padding:9px 11px}.device-settings-children{gap:7px}.device-settings-child{min-height:100px}.device-settings-child>span:first-child{font-size:2.3rem}.device-settings-child strong{font-size:.82rem}}
