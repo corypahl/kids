@@ -7,6 +7,8 @@ import './creator-games.css';
 import './device-settings.css';
 import './immersive.css';
 import './studio.css';
+import './naughty-nice.css';
+import './cabin.css';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

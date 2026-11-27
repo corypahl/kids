@@ -5,8 +5,9 @@ import type { ChildId, Tab } from './data';
 import { familyToday, nativeChristmas, readFamilyKey, requestApi, storeFamilyKey } from './api';
 import type { VillageState, Wish } from './api';
 import { AdventCalendar, GlitterDiary, SantaWishlist } from './Features';
-import { ReindeerBarn, VillageHome } from './Village';
-import { MrsClausStudio, SantaWorkshop } from './Studio';
+import { VillageHome } from './Village';
+import { NaughtyNiceMeter } from './NaughtyNiceMeter';
+import { ElfDesignSchool, SantaWorkshop } from './Studio';
 import { DeviceSettings, readDeviceChild } from './DeviceSettings';
 import type { VillageDestination } from './Village';
 
@@ -196,8 +197,8 @@ type GameId = 'memory' | 'counting' | 'trivia';
 function Games({ game, setGame }: { game: GameId; setGame: (game: GameId) => void }) {
   return <section>
     <div className="content-heading">
-      <span className="eyebrow">🎮 THE TOY FACTORY</span>
-      <h2>Let’s play!</h2><p>Choose a Christmas game to play.</p>
+      <span className="eyebrow">🎮 REINDEER GAMES</span>
+      <h2>Reindeer Games</h2><p>Choose a Christmas game! New adventures can join the herd here.</p>
     </div>
     <div className="game-picker">
       {([
@@ -214,9 +215,10 @@ function Games({ game, setGame }: { game: GameId; setGame: (game: GameId) => voi
   </section>;
 }
 
-function Activities({ child, completed, toggle, initialCategory }: {
+function Activities({ child, completed, toggle, initialCategory, showFilters = true }: {
   child: string; completed: number[]; toggle: (id: number) => void;
   initialCategory: 'All' | 'Create' | 'Play' | 'Kindness' | 'Family';
+  showFilters?: boolean;
 }) {
   const [category, setCategory] = useState(initialCategory);
   const list = category === 'All' ? ACTIVITIES : ACTIVITIES.filter(item => item.category === category);
@@ -228,11 +230,12 @@ function Activities({ child, completed, toggle, initialCategory }: {
         <div className="progress-track"><div style={{ width: ((completed.length / 24) * 100) + '%' }} /></div>
         <small>Complete all 24 for a full Christmas calendar!</small>
       </div>
-      <div className="filter-row" aria-label="Filter activities">
-        {(['All', 'Create', 'Play', 'Kindness', 'Family'] as const).map(c => (
-          <button key={c} className={'pill ' + (category === c ? 'selected' : '')} onClick={() => setCategory(c)}>{c}</button>
+      {showFilters && <div className="filter-row" aria-label="Filter adventures and crafts">
+        {(['All', 'Create', 'Play', 'Family'] as const).map(c => (
+          <button key={c} type="button" className={'pill ' + (category === c ? 'selected' : '')}
+            onClick={() => setCategory(c)}>{c}</button>
         ))}
-      </div>
+      </div>}
       <div className="activity-grid">
         {list.map(activity => (
           <button key={activity.id} className={'activity-card ' + (completed.includes(activity.id) ? 'done' : '')}
@@ -247,6 +250,30 @@ function Activities({ child, completed, toggle, initialCategory }: {
       </div>
     </section>
   );
+}
+
+function MrsClausCabin({ child, completed, toggle, initialCategory }: {
+  child: string; completed: number[]; toggle: (id: number) => void;
+  initialCategory: 'All' | 'Create' | 'Play' | 'Kindness' | 'Family';
+}) {
+  const [corner, setCorner] = useState<'All' | 'Kindness'>(initialCategory === 'Kindness' ? 'Kindness' : 'All');
+  return <section className="mrs-claus-cabin">
+    <div className="cabin-banner">
+      <span className="cabin-icon" aria-hidden="true">👵🏻🏠</span>
+      <div><span className="eyebrow">A COZY PLACE FOR CHRISTMAS FUN</span>
+        <h1>Mrs. Claus’s Cabin</h1>
+        <p>Choose an adventure, make something wonderful, or brighten someone’s day.</p></div>
+    </div>
+    <div className="cabin-corners" role="group" aria-label="Mrs. Claus's activities">
+      <button type="button" className={corner === 'All' ? 'selected' : ''} aria-pressed={corner === 'All'}
+        onClick={() => setCorner('All')}><span aria-hidden="true">⭐</span><strong>Adventures & Crafts</strong><small>Activities for every day</small></button>
+      <button type="button" className={corner === 'Kindness' ? 'selected' : ''} aria-pressed={corner === 'Kindness'}
+        onClick={() => setCorner('Kindness')}><span aria-hidden="true">💚</span><strong>Kindness Corner</strong><small>Make someone smile</small></button>
+    </div>
+    <Activities key={corner} child={child} completed={completed} toggle={toggle}
+      initialCategory={corner === 'Kindness' ? 'Kindness' : 'All'}
+      showFilters={corner === 'All'} />
+  </section>;
 }
 
 function Home({ days, child, childId, opened, ready, onVisit, onOpen, onSettings }: {
@@ -402,14 +429,14 @@ export default function App() {
           opened={state.opened} ready={isReady} onVisit={visit} onOpen={openAdvent}
           onSettings={() => setSettingsOpen(true)} />}
         {child && tab === 'games' && <Games game={game} setGame={setGame} />}
-        {child && tab === 'activities' && isReady && <Activities child={active.name} completed={state.completed}
+        {child && tab === 'activities' && isReady && <MrsClausCabin child={active.name} completed={state.completed}
           toggle={id => void toggleActivity(id)} initialCategory={activityCategory} />}
         {child && tab === 'wishlist' && isReady && <SantaWishlist child={active.name} wishes={state.wishes}
           onAdd={addWish} onFavorite={wish => changeWish(wish)} onRemove={wish => changeWish(wish, true)} />}
         {child && tab === 'diary' && isReady && <GlitterDiary child={child} ready={isReady} />}
-        {child && tab === 'studio' && <MrsClausStudio child={child} />}
+        {child && tab === 'studio' && <ElfDesignSchool child={child} />}
         {child && tab === 'workshop' && <SantaWorkshop />}
-        {child && tab === 'reindeer' && <ReindeerBarn />}
+        {child && tab === 'nice-meter' && isReady && <NaughtyNiceMeter child={child} name={active.name} />}
       </main>
       {!child && <div className="device-profile-unassigned"><h2>⚙️ Grown-up setup</h2><p>Choose this tablet’s Christmas Village profile to get started.</p></div>}
       {settingsOpen && <DeviceSettings assignedChild={child}

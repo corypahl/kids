@@ -194,6 +194,9 @@
 }
 .immersive-shell .village-spot-icon{font-size:clamp(1.4rem,2vw,1.85rem)}
 .immersive-shell .village-spot-santa{background:#fff0e5ed}
+.immersive-shell .village-spot-games{background:#dff4feed}
+.immersive-shell .village-spot-cabin{background:#fff5d6ef;border-color:#f6dbab}
+.immersive-shell .village-spot-nice-meter{background:#e1ffebed;border-color:#afe1bd}
 .immersive-shell .village-spot-glitter{background:#f8e5ffed}
 .immersive-shell .village-spot-advent{background:#fff5bced}
 .immersive-shell .village-spot-toys{background:#dff5ffed}
@@ -565,3 +568,7 @@
   .immersive-shell .village-countdown { height:65px;width:66px;min-width:66px; }
   .immersive-shell .village-countdown strong { font-size:1.75rem; }
 }
+
+/* Compact multiline labels stay legible on the kids' landscape tablets. */
+@media (orientation:landscape) and (min-width:700px){.immersive-shell .village-spot-cabin,.immersive-shell .village-spot-nice-meter{min-width:110px;max-width:138px}.immersive-shell .village-spot-cabin .village-spot-label,.immersive-shell .village-spot-nice-meter .village-spot-label{font-size:.75rem}}
+@media (max-width:570px) and (orientation:portrait){.immersive-shell .village-spot-cabin,.immersive-shell .village-spot-nice-meter{min-width:114px;max-width:150px}.immersive-shell .village-spot-cabin .village-spot-label,.immersive-shell .village-spot-nice-meter .village-spot-label{font-size:.76rem}}

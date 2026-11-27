@@ -12,15 +12,15 @@ const STATIONS: { id: DesignMode; icon: string; label: string; detail: string }[
   { id: 'gingerbread', icon: '🎀', label: 'Gingerbread', detail: 'Create a cookie friend' },
 ];
 
-export function MrsClausStudio({ child }: { child: ChildId }) {
+export function ElfDesignSchool({ child }: { child: ChildId }) {
   const [station, setStation] = useState<DesignMode>('cookies');
-  return <section className="mrs-claus-studio">
+  return <section className="elf-design-school">
     <header className="studio-heading">
-      <div className="studio-heading-art" aria-hidden="true">👵🏻🎄</div>
+      <div className="studio-heading-art" aria-hidden="true">🧝🎨</div>
       <div>
-        <span className="eyebrow">WELCOME TO MRS. CLAUS’S WORKSHOP</span>
-        <h1>Mrs. Claus’s Design Studio</h1>
-        <p>Choose something magical to make. Mix, match, decorate, and save your favorite characters!</p>
+        <span className="eyebrow">WELCOME TO THE NORTH POLE ART CLASS</span>
+        <h1>Elf Design School</h1>
+        <p>The elves are ready to teach you! Create cookies, snowmen, elves, and gingerbread friends.</p>
       </div>
     </header>
     <nav className="studio-stations" aria-label="Choose a design activity">

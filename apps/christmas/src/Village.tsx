@@ -19,14 +19,13 @@ type VillageStop = {
 
 export const VILLAGE_STOPS: VillageStop[] = [
   { id: 'santa', label: "Santa's Workshop", icon: '🎅', description: 'Watch the North Pole livestream', x: 16, y: 57, mobileX: 25, mobileY: 39, destination: { tab: 'workshop' } },
-  { id: 'toys', label: 'Toy Factory', icon: '🎮', description: 'Play Christmas games', x: 38, y: 51, mobileX: 75, mobileY: 39, destination: { tab: 'games' } },
-  { id: 'studio', label: "Mrs. Claus's Design Studio", icon: '🎨', description: 'Decorate cookies, elves, snowmen and gingerbread', x: 36, y: 32, mobileX: 25, mobileY: 23, destination: { tab: 'studio' } },
+  { id: 'games', label: 'Reindeer Games', icon: '🎮', description: 'Play Christmas games', x: 38, y: 51, mobileX: 75, mobileY: 39, destination: { tab: 'games' } },
+  { id: 'studio', label: 'Elf Design School', icon: '🎨', description: 'Create cookies, elves, snowmen and gingerbread', x: 36, y: 32, mobileX: 25, mobileY: 23, destination: { tab: 'studio' } },
   { id: 'mailbox', label: "Santa's Mailbox", icon: '💌', description: 'Make your wish list for Santa', x: 82, y: 31, mobileX: 75, mobileY: 23, destination: { tab: 'wishlist' } },
   { id: 'advent', label: 'Advent Tree', icon: '🎄', description: 'Open a daily surprise', x: 58, y: 61, mobileX: 25, mobileY: 55, advent: true },
   { id: 'glitter', label: "Glitter's Cottage", icon: '📸', description: "Discover Glitter's diary", x: 78, y: 56, mobileX: 75, mobileY: 55, destination: { tab: 'diary' } },
-  { id: 'reindeer', label: 'Reindeer Barn', icon: '🦌', description: 'Feed the reindeer', x: 65, y: 87, mobileX: 75, mobileY: 71, destination: { tab: 'reindeer' } },
-  { id: 'lodge', label: 'Adventure Lodge', icon: '⭐', description: 'Explore Christmas activities and craft ideas', x: 27, y: 87, mobileX: 25, mobileY: 71, destination: { tab: 'activities', category: 'All' } },
-  { id: 'post', label: 'Elf Post Office', icon: '💚', description: 'Spread some kindness', x: 90, y: 42, mobileX: 75, mobileY: 87, destination: { tab: 'activities', category: 'Kindness' } },
+  { id: 'cabin', label: "Mrs. Claus's Cabin", icon: '🏠', description: 'Activities and kindness with Mrs. Claus', x: 27, y: 87, mobileX: 25, mobileY: 71, destination: { tab: 'activities', category: 'All' } },
+  { id: 'nice-meter', label: 'Naughty or Nice?', icon: '⭐', description: 'Choose where you think you are on the list this year', x: 65, y: 87, mobileX: 75, mobileY: 71, destination: { tab: 'nice-meter' } },
 ];
 
 type HouseProps = { x: number; y: number; wall: string; roof: string; door: string; window: string; large?: boolean };
@@ -65,7 +64,7 @@ function Pine({ x, y, size = 1 }: { x: number; y: number; size?: number }) {
 }
 
 function VillageIllustration() {
-  return <svg className="village-scene village-scene-landscape" viewBox="0 0 1200 690" role="img" aria-label="A colorful snowy Christmas village with Santa's workshop, a toy factory, Glitter's cottage, bakery, reindeer barn, craft cabin, post office, and an Advent tree, with an Elf Design Studio and Snowman Garden." preserveAspectRatio="none">
+  return <svg className="village-scene village-scene-landscape" viewBox="0 0 1200 690" role="img" aria-label="A colorful snowy Christmas village with Santa's Workshop, Reindeer Games, Elf Design School, Mrs. Claus's Cabin, Santa's Mailbox, Glitter's Cottage, an Advent Tree and a Naughty or Nice check-in." preserveAspectRatio="none">
     <defs>
       <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
         <stop offset="0" stopColor="#215a87"/><stop offset=".61" stopColor="#65b4c1"/><stop offset="1" stopColor="#d5f2e4"/>
@@ -133,7 +132,7 @@ function VillageIllustration() {
 function VillagePortraitIllustration() {
   const lights = ['#ffe39e','#ed8a9a','#9fe6b6','#b5e8f5'];
   return <svg className="village-scene village-scene-portrait" viewBox="0 0 440 1400"
-    role="img" aria-label="An illustrated snowy village to explore by scrolling down, with ten Christmas destinations.">
+    role="img" aria-label="An illustrated snowy village to explore by scrolling down, with eight Christmas destinations.">
     <defs>
       <linearGradient id="portrait-sky" x1="0" y1="0" x2="0" y2="1">
         <stop offset="0" stopColor="#194e72"/><stop offset=".27" stopColor="#5b9bbb"/>
@@ -319,54 +318,6 @@ export function CookieBakery() {
         </div>
         <button className="action secondary" type="button" disabled={!decorations.length} onClick={() => setCelebrating(true)}>🎉 Show my masterpiece!</button>
         <p className="mini-hint">Decorating is just for fun — your artwork resets when you leave the bakery.</p>
-      </div>
-    </div>
-  </section>;
-}
-
-const REINDEER_FACTS = [
-  'Reindeer have wide hooves that help them walk on snowy ground.',
-  'Both male and female reindeer can grow antlers!',
-  'Reindeer have very warm coats to stay cozy in the cold.',
-  'A baby reindeer is called a calf.',
-  'Reindeer can travel a long way together in a herd.',
-];
-const SNACKS = [{ icon: '🥕', label: 'Carrot' },{ icon: '🍎', label: 'Apple' },{ icon: '🌾', label: 'Hay' }];
-export function ReindeerBarn() {
-  const [fed, setFed] = useState(0);
-  const [lastSnack, setLastSnack] = useState('');
-  const [fact, setFact] = useState(0);
-  const full = fed >= 5;
-  return <section className="mini-adventure" aria-label="Feed the reindeer game">
-    <header className="content-heading"><span className="eyebrow">🦌 THE REINDEER BARN</span><h2>Help Feed the Reindeer!</h2>
-      <p>Give the reindeer five tasty snacks to get them ready for Christmas.</p></header>
-    <div className="mini-activity-layout">
-      <div className="reindeer-scene">
-        <span className="reindeer-snow">❄️ ✨ ❄️</span>
-        <div className={lastSnack ? 'reindeer-friend happy' : 'reindeer-friend'} aria-label="Friendly reindeer">🦌</div>
-        <div className="reindeer-feed-status" aria-live="polite">
-          <strong>{full ? '🌟 All fed and ready to go!' : fed === 0 ? 'I’m a hungry reindeer!' : 'Yummy ' + lastSnack + '! Thank you!'}</strong>
-          <span>{fed} of 5 snacks</span>
-        </div>
-        <div className="reindeer-progress" role="progressbar" aria-label="Reindeer fed snacks" aria-valuemin={0} aria-valuemax={5} aria-valuenow={fed}>
-          <div style={{width:(fed/5*100)+'%'}} />
-        </div>
-      </div>
-      <div className="mini-controls">
-        <h3>Choose a snack!</h3>
-        <div className="reindeer-snacks">
-          {SNACKS.map(item => <button key={item.label} type="button" disabled={full} onClick={() => {setFed(n => Math.min(5,n+1));setLastSnack(item.label.toLowerCase());}}>
-            <span aria-hidden="true">{item.icon}</span>{item.label}
-          </button>)}
-        </div>
-        {full ? <div className="mini-celebration" role="status">🎉 Great job! The reindeer are ready for their trip!</div> :
-          <p className="mini-hint">Tap the food to give your reindeer a snack.</p>}
-        <button className="action secondary" type="button" onClick={() => {setFed(0);setLastSnack('');}}>↻ Feed again</button>
-        <div className="reindeer-fact">
-          <span className="eyebrow">DID YOU KNOW?</span>
-          <p>{REINDEER_FACTS[fact]}</p>
-          <button className="pill" type="button" onClick={() => setFact(n => (n + 1) % REINDEER_FACTS.length)}>Another reindeer fact →</button>
-        </div>
       </div>
     </div>
   </section>;

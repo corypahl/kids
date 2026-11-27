@@ -90,6 +90,32 @@ async function api(request, env, pathname, url) {
     });
   }
 
+  // One self-assessed Naughty / Nice position per child and calendar year.
+  // Both endpoints require the existing family key (enforced above).
+  if (path === '/nice-meter' && method === 'GET') {
+    const child = url.searchParams.get('child');
+    if (!validChild(child)) return fail('Invalid child profile.', 400);
+    const { year } = todayParts();
+    const saved = await env.DB.prepare(
+      'SELECT value, updated_at FROM naughty_nice_answers WHERE child = ? AND year = ?'
+    ).bind(child, year).first();
+    return response({ year, value: saved?.value ?? null, updatedAt: saved?.updated_at ?? null });
+  }
+
+  if (path === '/nice-meter' && method === 'POST') {
+    const body = await safeJson(request);
+    const { year } = todayParts();
+    if (!validChild(body?.child) || !Number.isInteger(body?.year) || body.year !== year ||
+      !Number.isInteger(body?.value) || body.value < 0 || body.value > 100) {
+      return fail('Choose a position from 0 to 100 for this year.', 400);
+    }
+    await env.DB.prepare(
+      'INSERT INTO naughty_nice_answers(child, year, value) VALUES (?, ?, ?) ' +
+      'ON CONFLICT(child, year) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP'
+    ).bind(body.child, year, body.value).run();
+    return response({ year, value: body.value });
+  }
+
   if (path === '/wishes' && method === 'POST') {
     const b = await safeJson(request);
     if (!validChild(b?.child) || typeof b?.name !== 'string' || !b.name.trim() || b.name.trim().length > 100 ||
