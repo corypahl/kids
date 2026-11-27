@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import type { MouseEvent } from 'react';
 import type { ChildId } from './data';
 import { CursiveTracing } from './CursiveTracing';
 
@@ -26,7 +27,7 @@ export function SnowGlobeMaker({ child,onComplete }: {child:ChildId;onComplete:(
   const [shaking,setShaking]=useState(false);
   const [message,setMessage]=useState('Tap inside the globe to decorate your world.');
   const background=theme==='Northern lights'?'#5f9da2':theme==='Pink twilight'?'#cd9ecb':'#6b8da7';
-  function place(event:React.MouseEvent<SVGSVGElement>) {
+  function place(event:MouseEvent<SVGSVGElement>) {
     const rect=event.currentTarget.getBoundingClientRect();
     const x=(event.clientX-rect.left)/rect.width*300,y=(event.clientY-rect.top)/rect.height*280;
     if(Math.hypot(x-150,y-130)>109||y<34||pieces.length>=25)return;
