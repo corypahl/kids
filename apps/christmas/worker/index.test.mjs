@@ -15,7 +15,7 @@ describe('Christmas Worker', () => {
     assert.equal(assetRequest(make('/christmas/parent/')).request.url, base + '/parent/');
     assert.equal(assetRequest(make('/parent/')).request.url, base + '/parent/');
   });
-  it('serves the parent dashboard at its canonical /parent/ asset URL without redirects', async () => {
+  it('blocks parent HTML before serving assets if Google Access is unconfigured', async () => {
     const visited = [];
     const ASSETS = { fetch: async request => {
       const path = new URL(request.url).pathname;
@@ -33,9 +33,9 @@ describe('Christmas Worker', () => {
       return new Response('Not Found', { status: 404 });
     } };
     const response = await worker.fetch(make('/parent/'), { ASSETS });
-    assert.equal(response.status, 200);
-    assert.match(await response.text(), /Christmas Parent Dashboard/);
-    assert.deepEqual(visited, ['/parent/']);
+    assert.equal(response.status, 503);
+    assert.equal(response.headers.get('location'), null);
+    assert.deepEqual(visited, []);
   });
   it('still serves the static app', async () => {
     assert.equal((await worker.fetch(make('/christmas/'), { ASSETS: assets })).status, 200);
