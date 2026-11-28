@@ -43,41 +43,46 @@ describe('Christmas Worker', () => {
   it('never exposes API data with no D1 or family key', async () => {
     assert.equal((await worker.fetch(make('/christmas/api/state?child=emma'), { ASSETS: assets })).status, 503);
   });
-  it('allows parent routes with a parent key alone but never child endpoints', async () => {
-    const DB = { prepare(sql) { return {
-      bind() { return this; },
-      async all() { return { results: sql.includes('glitter_diary') ? [
-        { id: 'a', child: 'emma', day: '2026-12-01', note: 'Glitter in the tree', photo_key: 'image.jpg', audio_key: 'voice.webm' }
-      ] : [{ id: 'b', child: 'emma', name: 'Toy', favorite: 1, purchased: 0 }] }; },
-      async first() { return { photo_key: 'image.jpg', audio_key: 'voice.webm', photo_type: 'image/jpeg', audio_type: 'audio/webm' }; },
-    }; } };
-    const env = { ASSETS: assets, DB, CHRISTMAS_PARENT_KEY: 'parent-secret' };
-    const headers = { 'X-Parent-Key': 'parent-secret' };
-    const wishes = await worker.fetch(make('/api/parent/wishes', { headers }), env);
-    assert.equal(wishes.status, 200);
-    assert.equal((await wishes.json()).wishes[0].purchased, false);
-    const diary = await worker.fetch(make('/api/parent/diary?year=2026', { headers }), env);
-    assert.equal(diary.status, 200);
-    const entries = (await diary.json()).entries;
-    assert.equal(entries[0].hasPhoto, true);
-    assert.equal(entries[0].hasAudio, true);
-    const MEDIA = { async get() { return { body: new Response('photo').body }; } };
-    const media = await worker.fetch(make('/api/parent/media/00000000-0000-0000-0000-000000000000/photo', { headers }), { ...env, MEDIA });
-    assert.equal(media.status, 200);
-    assert.equal(media.headers.get('cache-control'), 'private, no-store');
-    assert.equal((await worker.fetch(make('/api/state?child=emma', { headers }), env)).status, 503);
-    assert.equal((await worker.fetch(make('/api/parent/diary?year=2026'), env)).status, 403);
-    assert.equal((await worker.fetch(make('/api/parent/media/00000000-0000-0000-0000-000000000000/photo'), env)).status, 403);
+  it('denies dashboard reads without a verified Google Access assertion', async () => {
+    const DB = { prepare() { throw Error('Unauthenticated dashboard requests cannot read private data'); } };
+    const env = {
+      ASSETS: assets, DB, CHRISTMAS_PARENT_KEY:'parent-secret', CHRISTMAS_FAMILY_KEY:'device-key',
+    };
+    for (const path of [
+      '/api/parent/session','/api/parent/wishes','/api/parent/diary?year=2026',
+      '/api/parent/media/00000000-0000-0000-0000-000000000000/photo'
+    ]) {
+      const res=await worker.fetch(make(path,{headers:{'X-Parent-Key':'parent-secret'}}),env);
+      assert.equal(res.status,503); // Auth config missing: fail closed
+    }
+    const html=await worker.fetch(make('/christmas/parent/',{headers:{'X-Parent-Key':'parent-secret'}}),env);
+    assert.equal(html.status,503);
+    assert.equal((await worker.fetch(make('/api/device/verify',{headers:{'X-Parent-Key':'parent-secret'}}),env)).status,200);
+    assert.equal((await worker.fetch(make('/api/state?child=emma',{headers:{'X-Parent-Key':'parent-secret'}}),env)).status,401);
+  });
+  it('denies the old parent key on dashboard API even when Access settings exist', async () => {
+    const env={
+      ASSETS:assets, DB:{prepare(){throw Error('No anonymous DB access');}},
+      CHRISTMAS_PARENT_KEY:'parent-secret',
+      CHRISTMAS_PARENT_ACCESS_TEAM_DOMAIN:'parents.cloudflareaccess.com',
+      CHRISTMAS_PARENT_ACCESS_AUD:'expected-aud',
+      CHRISTMAS_PARENT_ALLOWED_EMAILS:'person@example.com',
+    };
+    const res=await worker.fetch(make('/api/parent/wishes',{headers:{'X-Parent-Key':'parent-secret'}}),env);
+    assert.equal(res.status,401);
+    assert.equal((await worker.fetch(make('/christmas/parent/'),env)).status,401);
   });
   it('requires the family key before any data reads', async () => {
     const env = { ASSETS: assets, DB: {}, CHRISTMAS_FAMILY_KEY: 'secret' };
     assert.equal((await worker.fetch(make('/api/state?child=emma'), env)).status, 401);
-    assert.equal((await worker.fetch(make('/api/parent/wishes'), env)).status, 403);
+    assert.equal((await worker.fetch(make('/api/parent/wishes'), env)).status, 503);
   });
-  it('requires a separate parent key for purchase information', async () => {
-    const env = { ASSETS: assets, DB: {}, CHRISTMAS_FAMILY_KEY: 'secret', CHRISTMAS_PARENT_KEY: 'other' };
+  it('does not allow a family key to read parent purchases', async () => {
+    const env = { ASSETS: assets, DB: {}, CHRISTMAS_FAMILY_KEY: 'secret', CHRISTMAS_PARENT_KEY: 'other',
+      CHRISTMAS_PARENT_ACCESS_TEAM_DOMAIN:'parents.cloudflareaccess.com',
+      CHRISTMAS_PARENT_ACCESS_AUD:'expected-aud', CHRISTMAS_PARENT_ALLOWED_EMAILS:'person@example.com' };
     const res = await worker.fetch(make('/api/parent/wishes', { headers: { 'X-Family-Key': 'secret' } }), env);
-    assert.equal(res.status, 403);
+    assert.equal(res.status, 401);
   });
   it('checks the family key for audio/photo media', async () => {
     const env = { ASSETS: assets, DB: {}, CHRISTMAS_FAMILY_KEY: 'secret' };
