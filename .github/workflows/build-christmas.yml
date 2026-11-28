@@ -94,6 +94,25 @@ jobs:
           fs.writeFileSync(path, JSON.stringify(config, null, 2));
           NODE
 
+      - name: Verify Google Access protects parent routes before deployment
+        if: github.event_name != 'pull_request'
+        run: |
+          set -euo pipefail
+          # Both URLs must go through Cloudflare Access before ANY parent-key
+          # authorization code is replaced by the Google-authenticated build.
+          for route in /christmas/parent/ /christmas/api/parent/wishes; do
+            headers="$(mktemp)"
+            status="$(curl --silent --show-error --max-time 15 \
+              --output /dev/null --dump-header "$headers" \
+              --write-out '%{http_code}' "https://kids.corypahl.dev$route")"
+            redirect="$(grep -i '^location:' "$headers" | tail -1 || true)"
+            rm -f "$headers"
+            if [[ ! "$status" =~ ^30[12378]$ ]] || [[ ! "$redirect" =~ /cdn-cgi/access/ ]]; then
+              echo "::error::Cloudflare Access is not protecting $route (HTTP $status). Create the Google-only path-scoped Access app before deploying."
+              exit 1
+            fi
+          done
+
       - name: Apply Christmas D1 migrations
         if: github.event_name != 'pull_request'
         env:
