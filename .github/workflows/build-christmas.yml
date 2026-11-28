@@ -81,7 +81,7 @@ jobs:
           const domain = (process.env.PARENT_ACCESS_TEAM_DOMAIN || '').trim();
           const audience = (process.env.PARENT_ACCESS_AUD || '').trim();
           const emails = (process.env.PARENT_ALLOWED_EMAILS || '').trim();
-          if (!/^[a-z0-9-]+\\.cloudflareaccess\\.com$/.test(domain) || !audience ||
+          if (!/^[a-z0-9-]+\.cloudflareaccess\.com$/.test(domain) || !audience ||
               !emails.includes('@')) {
             throw new Error('Set KIDS_PARENT_ACCESS_TEAM_DOMAIN, KIDS_PARENT_ACCESS_AUD, and KIDS_PARENT_ALLOWED_EMAILS repository variables after configuring Cloudflare Access.');
           }
