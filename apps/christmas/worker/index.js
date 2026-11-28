@@ -328,6 +328,10 @@ export default {
     if (url.pathname === '/parent/' || url.pathname === '/parent/index.html') {
       if (!parentAccessConfigured(env)) return fail('Google parent sign-in is not configured.', 503);
       if (!await verifiedParentEmail(routed.request, env)) return fail('Google sign-in required.', 401);
+      const page = await env.ASSETS.fetch(routed.request);
+      const headers = new Headers(page.headers);
+      headers.set('Cache-Control', 'private, no-store');
+      return new Response(page.body, { status: page.status, statusText: page.statusText, headers });
     }
     return env.ASSETS.fetch(routed.request);
   },
