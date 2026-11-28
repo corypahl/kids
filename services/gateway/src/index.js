@@ -190,6 +190,14 @@ export async function routeRequest(request, env) {
     });
   }
 
+  // Canonicalize parent dashboard URLs before the /christmas prefix is
+  // stripped for the service binding. Otherwise Workers Assets redirects
+  // /parent/index.html to /parent/, a route the public gateway does not serve.
+  if (url.pathname === "/christmas/parent" || url.pathname === "/christmas/parent/index.html") {
+    url.pathname = "/christmas/parent/";
+    return Response.redirect(url.toString(), 308);
+  }
+
   const route = findRoute(url.pathname);
 
   if (!route) {

@@ -17,7 +17,9 @@ export function assetRequest(request) {
   if (url.pathname.startsWith('/christmas/')) {
     url.pathname = url.pathname.slice('/christmas'.length) || '/';
   }
-  if (url.pathname === '/parent/') url.pathname = '/parent/index.html';
+  // Keep /parent/ intact: Workers Assets serves parent/index.html at this
+  // canonical URL. Rewriting to /parent/index.html triggers a 307 redirect
+  // to /parent/, losing the public /christmas prefix at the gateway.
   return { request: new Request(url, request) };
 }
 

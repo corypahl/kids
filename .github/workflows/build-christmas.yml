@@ -47,6 +47,9 @@ jobs:
       - name: Test Christmas worker
         run: npm test --workspace kids-christmas
 
+      - name: Test Christmas gateway routing
+        run: node --test services/gateway/test/index.test.mjs
+
       - name: Build Christmas app
         run: npm run build --workspace kids-christmas
 

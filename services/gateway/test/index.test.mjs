@@ -4,6 +4,7 @@ import { describe, it } from "node:test";
 import { fileURLToPath } from "node:url";
 
 import worker from "../src/index.js";
+import christmasWorker from "../../../apps/christmas/worker/index.js";
 
 const routeCases = [
   ["bedtime", "BEDTIME"],
@@ -77,6 +78,42 @@ describe("kids gateway", () => {
       assert.equal(forwardedRequest.headers.get("x-custom-header"), "test-header");
     });
   }
+
+  it("serves the parent dashboard through the Christmas service without dropping the prefix", async () => {
+    const requestedAssets = [];
+    const CHRISTMAS = { fetch: request => christmasWorker.fetch(request, {
+      ASSETS: {
+        fetch: assetRequest => {
+          const path = new URL(assetRequest.url).pathname;
+          requestedAssets.push(path);
+          if (path === "/parent/index.html") {
+            return Response.redirect("https://kids.corypahl.dev/parent/", 307);
+          }
+          if (path === "/parent/") {
+            return new Response("<!doctype html><title>Christmas Parent Dashboard</title>", {
+              headers: { "content-type": "text/html" },
+            });
+          }
+          return new Response("Not Found", { status: 404 });
+        },
+      },
+    }) };
+    const response = await worker.fetch(
+      new Request("https://kids.corypahl.dev/christmas/parent/"),
+      { CHRISTMAS },
+    );
+    assert.equal(response.status, 200);
+    assert.match(await response.text(), /Christmas Parent Dashboard/);
+    assert.deepEqual(requestedAssets, ["/parent/"]);
+  });
+
+  it("redirects noncanonical parent URLs to the public Christmas prefix", async () => {
+    for (const path of ["/christmas/parent", "/christmas/parent/index.html"]) {
+      const response = await worker.fetch(new Request("https://kids.corypahl.dev" + path + "?hello=1"), {});
+      assert.equal(response.status, 308);
+      assert.equal(response.headers.get("location"), "https://kids.corypahl.dev/christmas/parent/?hello=1");
+    }
+  });
 
   it("returns 503 when a matched route has no configured binding", async () => {
     const response = await worker.fetch(
