@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import worker from './index.js';
 
-const base = 'https://kids.corypahl.dev/christmas/api/parent/verify';
+const base = 'https://kids.corypahl.dev/christmas/api/device/verify';
 const env = {
   DB: { prepare() { throw Error('Verifying a parent key must not read child data'); } },
   ASSETS: { async fetch() { return new Response('static'); } },
@@ -22,6 +22,13 @@ describe('tablet profile setup parent authorization', () => {
     assert.equal(response.status, 200);
     assert.deepEqual(await response.json(), { ok: true });
     assert.equal(response.headers.get('cache-control'), 'no-store');
+  });
+  it('preserves legacy parent verification as an alias for cached tablet clients', async () => {
+    const response = await worker.fetch(new Request(
+      'https://kids.corypahl.dev/christmas/api/parent/verify',
+      { headers: { 'X-Parent-Key': 'test-parent-secret' } },
+    ), env);
+    assert.equal(response.status, 200);
   });
   it('does not authorize with a missing configured parent key', async () => {
     const response = await worker.fetch(new Request(base, {
