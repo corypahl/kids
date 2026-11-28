@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import type { FormEvent } from 'react';
 
 type Child = 'emma' | 'sophie' | 'adam';
 type Wish = { id: string; child: Child; icon: string; name: string; favorite: boolean; purchased: boolean };
@@ -14,25 +13,30 @@ const CHILDREN: { id: Child; name: string; icon: string }[] = [
 
 const currentYear = Number(Intl.DateTimeFormat('en-US', { timeZone: 'America/Detroit', year: 'numeric' }).format(new Date()));
 
-async function parentRequest<T>(key: string, path: string, options: { method?: string; data?: unknown } = {}): Promise<T> {
+async function parentRequest<T>(path: string, options: { method?: string; data?: unknown } = {}): Promise<T> {
   const response = await fetch('/christmas/api/parent/' + path, {
     method: options.method || 'GET',
     headers: {
-      'X-Parent-Key': key,
+      'X-Requested-With': 'XMLHttpRequest',
       ...(options.data !== undefined ? { 'Content-Type': 'application/json' } : {}),
     },
     body: options.data === undefined ? undefined : JSON.stringify(options.data),
-    credentials: 'omit',
+    credentials: 'same-origin',
     cache: 'no-store',
   });
   if (!response.ok) {
     const data = await response.json().catch(() => null) as { error?: string } | null;
-    throw new Error(data?.error || 'Could not load family data (' + response.status + ').');
+    throw new Error(data?.error || (response.status === 401
+      ? 'Your Google session expired. Refresh the page to sign in again.'
+      : 'Could not load family data (' + response.status + ').'));
+  }
+  if (!response.headers.get('content-type')?.includes('application/json')) {
+    throw new Error('Your Google session expired. Refresh the page to sign in again.');
   }
   return response.json() as Promise<T>;
 }
 
-function DiaryMedia({ entry, kind, secret }: { entry: DiaryEntry; kind: 'photo' | 'audio'; secret: string }) {
+function DiaryMedia({ entry, kind }: { entry: DiaryEntry; kind: 'photo' | 'audio' }) {
   const [source, setSource] = useState('');
   const [error, setError] = useState('');
   useEffect(() => {
@@ -41,8 +45,8 @@ function DiaryMedia({ entry, kind, secret }: { entry: DiaryEntry; kind: 'photo' 
     setSource('');
     setError('');
     fetch('/christmas/api/parent/media/' + encodeURIComponent(entry.id) + '/' + kind, {
-      headers: { 'X-Parent-Key': secret },
-      credentials: 'omit',
+      headers: { 'X-Requested-With': 'XMLHttpRequest' },
+      credentials: 'same-origin',
       cache: 'no-store',
     }).then(async response => {
       if (!response.ok) throw new Error('Unable to load ' + kind + '.');
@@ -56,7 +60,7 @@ function DiaryMedia({ entry, kind, secret }: { entry: DiaryEntry; kind: 'photo' 
       open = false;
       if (objectUrl) URL.revokeObjectURL(objectUrl);
     };
-  }, [entry.id, kind, secret]);
+  }, [entry.id, kind]);
   if (error) return <p className="pd-media-error" role="status">{error}</p>;
   if (!source) return <p className="pd-media-loading">Loading {kind}…</p>;
   if (kind === 'photo') return <img src={source} loading="lazy" className="pd-photo" alt={'Glitter discovered by ' + entry.child} />;
@@ -64,8 +68,8 @@ function DiaryMedia({ entry, kind, secret }: { entry: DiaryEntry; kind: 'photo' 
 }
 
 export default function ParentApp() {
-  const [draftKey, setDraftKey] = useState('');
-  const [secret, setSecret] = useState('');
+  const [email, setEmail] = useState('');
+  const [loading, setLoading] = useState(true);
   const [view, setView] = useState<View>('wishes');
   const [filter, setFilter] = useState<'all' | Child>('all');
   const [year, setYear] = useState(currentYear);
@@ -78,33 +82,38 @@ export default function ParentApp() {
   const activeDay = days.includes(selectedDay) ? selectedDay : days[0];
   const visibleChildren = filter === 'all' ? CHILDREN : CHILDREN.filter(child => child.id === filter);
 
-  async function unlock(event: FormEvent) {
-    event.preventDefault();
-    if (!draftKey.trim()) return;
-    setBusy(true); setError('');
-    try {
-      const [wishData, diaryData] = await Promise.all([
-        parentRequest<{ wishes: Wish[] }>(draftKey.trim(), 'wishes'),
-        parentRequest<{ entries: DiaryEntry[] }>(draftKey.trim(), 'diary?year=' + year),
-      ]);
-      setWishes(wishData.wishes);
-      setDiary(diaryData.entries);
-      setSecret(draftKey.trim());
-      setDraftKey('');
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unable to unlock the dashboard.');
-    } finally {
-      setBusy(false);
-    }
-  }
+  // Cloudflare Access handles Google login before the page loads.
+  // Every parent API request independently verifies its signed assertion.
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      try {
+        const session = await parentRequest<{ email: string }>('session');
+        if (!active) return;
+        setEmail(session.email);
+        const [wishData, diaryData] = await Promise.all([
+          parentRequest<{ wishes: Wish[] }>('wishes'),
+          parentRequest<{ entries: DiaryEntry[] }>('diary?year=' + year),
+        ]);
+        if (!active) return;
+        setWishes(wishData.wishes);
+        setDiary(diaryData.entries);
+      } catch (err) {
+        if (active) setError(err instanceof Error ? err.message : 'Unable to open the dashboard.');
+      } finally {
+        if (active) setLoading(false);
+      }
+    })();
+    return () => { active = false; };
+  }, []);
 
-  async function refresh(key = secret, selectedYear = year) {
-    if (!key) return;
+  async function refresh(selectedYear = year) {
+    if (!email) return;
     setBusy(true); setError('');
     try {
       const [wishData, diaryData] = await Promise.all([
-        parentRequest<{ wishes: Wish[] }>(key, 'wishes'),
-        parentRequest<{ entries: DiaryEntry[] }>(key, 'diary?year=' + selectedYear),
+        parentRequest<{ wishes: Wish[] }>('wishes'),
+        parentRequest<{ entries: DiaryEntry[] }>('diary?year=' + selectedYear),
       ]);
       setWishes(wishData.wishes);
       setDiary(diaryData.entries);
@@ -115,20 +124,19 @@ export default function ParentApp() {
     }
   }
 
-  // Avoid a full refresh when switching tabs; reload the selected season on year change.
   useEffect(() => {
-    if (!secret) return;
+    if (!email) return;
     let active = true;
-    parentRequest<{ entries: DiaryEntry[] }>(secret, 'diary?year=' + year)
+    parentRequest<{ entries: DiaryEntry[] }>('diary?year=' + year)
       .then(result => { if (active) { setDiary(result.entries); setError(''); } })
       .catch(err => { if (active) setError(err instanceof Error ? err.message : 'Unable to load the selected year.'); });
     return () => { active = false; };
-  }, [year, secret]);
+  }, [year, email]);
 
   async function togglePurchased(wish: Wish) {
     setError('');
     try {
-      await parentRequest(secret, 'wishes/' + encodeURIComponent(wish.id), {
+      await parentRequest('wishes/' + encodeURIComponent(wish.id), {
         method: 'PATCH', data: { purchased: !wish.purchased },
       });
       setWishes(current => current.map(item =>
@@ -138,34 +146,24 @@ export default function ParentApp() {
     }
   }
 
-  function lock() {
-    setSecret(''); setDraftKey(''); setWishes([]); setDiary([]); setError('');
-  }
-
   return <div className="pd-shell">
     <header className="pd-header">
       <div className="pd-brand"><span className="pd-brand-icon">🎄</span><div>
         <span className="pd-kicker">CHRISTMAS VILLAGE</span><h1>Parent Dashboard</h1>
       </div></div>
-      {secret && <button type="button" className="pd-text-button" onClick={lock}>🔒 Lock dashboard</button>}
+      {email && <a className="pd-text-button" href="/cdn-cgi/access/logout">🔒 Sign out</a>}
     </header>
     <main className="pd-main">
-      {!secret ? <section className="pd-login">
-        <div className="pd-big-icon">🎅</div>
-        <span className="pd-kicker">GROWN-UPS ONLY</span>
-        <h2>Santa's family notebook</h2>
-        <p>View everyone's Christmas wishes and all of Glitter's adventures, including photos and voice recordings.</p>
-        <form onSubmit={unlock}>
-          <label htmlFor="parent-secret">Private parent key</label>
-          <input id="parent-secret" type="password" value={draftKey} autoComplete="off"
-            onChange={event => setDraftKey(event.target.value)} placeholder="Enter your parent key" required />
-          <button className="pd-primary" type="submit" disabled={!draftKey.trim() || busy}>
-            {busy ? 'Opening…' : 'Open parent dashboard'}
-          </button>
-        </form>
+      {loading ? <section className="pd-login">
+        <div className="pd-big-icon">🎄</div><h2>Signing in with Google…</h2>
+        <p>Checking your family dashboard access.</p>
+      </section> : !email ? <section className="pd-login">
+        <div className="pd-big-icon">🔒</div><h2>Google sign-in required</h2>
+        <p>The parent dashboard is private. Sign in using an approved family Google account.</p>
         {error && <p className="pd-error" role="alert">{error}</p>}
-        <p className="pd-note">Your parent key stays in this page only and is cleared when you lock it or close the tab.</p>
+        <a className="pd-primary" href="/christmas/parent/">Try again</a>
       </section> : <>
+        <p className="pd-signed-in">Signed in with Google: <strong>{email}</strong></p>
         <div className="pd-heading">
           <div><span className="pd-kicker">FAMILY CHRISTMAS MEMORIES</span>
             <h2>{view === 'wishes' ? 'Santa’s Wish Lists' : 'Glitter’s Diary'}</h2>
@@ -233,9 +231,9 @@ export default function ParentApp() {
               return <article className="pd-entry" key={child.id}>
                 <h4>{child.icon} {child.name}</h4>
                 {!entry ? <p className="pd-empty">No entry for this day.</p> : <>
-                  {entry.hasPhoto && <DiaryMedia key={entry.id + '-photo'} entry={entry} secret={secret} kind="photo" />}
+                  {entry.hasPhoto && <DiaryMedia key={entry.id + '-photo'} entry={entry} kind="photo" />}
                   {entry.note && <p className="pd-note-text">{entry.note}</p>}
-                  {entry.hasAudio && <DiaryMedia key={entry.id + '-audio'} entry={entry} secret={secret} kind="audio" />}
+                  {entry.hasAudio && <DiaryMedia key={entry.id + '-audio'} entry={entry} kind="audio" />}
                 </>}
               </article>;
             })}</div>
