@@ -79,7 +79,7 @@ describe("kids gateway", () => {
     });
   }
 
-  it("serves the parent dashboard through the Christmas service without dropping the prefix", async () => {
+  it("routes the parent dashboard through Christmas but blocks HTML without Google Access", async () => {
     const requestedAssets = [];
     const CHRISTMAS = { fetch: request => christmasWorker.fetch(request, {
       ASSETS: {
@@ -102,9 +102,9 @@ describe("kids gateway", () => {
       new Request("https://kids.corypahl.dev/christmas/parent/"),
       { CHRISTMAS },
     );
-    assert.equal(response.status, 200);
-    assert.match(await response.text(), /Christmas Parent Dashboard/);
-    assert.deepEqual(requestedAssets, ["/parent/"]);
+    assert.equal(response.status, 503);
+    assert.equal(response.headers.get("location"), null);
+    assert.deepEqual(requestedAssets, []);
   });
 
   it("redirects noncanonical parent URLs to the public Christmas prefix", async () => {
