@@ -1,3 +1,5 @@
+import { verifiedParentEmail, parentAccessConfigured } from './parent-access.js';
+
 const CHILDREN = new Set(['emma', 'sophie', 'adam']);
 const PASSPORT_STAMPS = new Set(['present-bounce','delivery-run','elf-coding','snow-globe','around-the-world','cursive','advent','kindness']);
 const IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/heic']);
@@ -61,8 +63,17 @@ async function api(request, env, pathname, url) {
   // Child API routes remain guarded by the existing family key.
   if (!env.DB) return fail('Family storage has not been configured yet.', 503);
   const path = pathname.slice('/api'.length);
-  if (path.startsWith('/parent/')) {
+  // The tablet's profile-settings unlock continues to use the existing parent key.
+  // All actual parent dashboard data requires a signed Google/Cloudflare Access
+  // application JWT instead, including the ability to mark gifts as purchased.
+  const deviceVerification = path === '/device/verify' || path === '/parent/verify';
+  let parentEmail = null;
+  if (deviceVerification) {
     if (!parentAuthorized(request, env)) return fail('Parent key required or incorrect.', 403);
+  } else if (path.startsWith('/parent/')) {
+    if (!parentAccessConfigured(env)) return fail('Google parent sign-in is not configured.', 503);
+    parentEmail = await verifiedParentEmail(request, env);
+    if (!parentEmail) return fail('Google sign-in required.', 401);
   } else {
     if (!env.CHRISTMAS_FAMILY_KEY) return fail('Family storage has not been configured yet.', 503);
     if (!familyAuthorized(request, env)) return fail('Family key required or incorrect.', 401);
@@ -75,7 +86,10 @@ async function api(request, env, pathname, url) {
   if (path === '/status' && method === 'GET') return response({ ready: true });
 
   // Parent-only check for changing a tablet's assigned child; no private data returned.
-  if (path === '/parent/verify' && method === 'GET') return response({ ok: true });
+  if (deviceVerification && method === 'GET') return response({ ok: true });
+
+  // Only an authenticated parent may learn the verified Google identity.
+  if (path === '/parent/session' && method === 'GET') return response({ email: parentEmail });
 
   if (path === '/state' && method === 'GET') {
     const child = url.searchParams.get('child');
@@ -285,13 +299,11 @@ async function api(request, env, pathname, url) {
   }
 
   if (path === '/parent/wishes' && method === 'GET') {
-    if (!parentAuthorized(request, env)) return fail('Parent key required or incorrect.', 403);
     const rows = await env.DB.prepare('SELECT id, child, name, icon, favorite, purchased FROM wishes ORDER BY child, created_at DESC').all();
     return response({ wishes: rows.results.map(x => ({ ...x, favorite: Boolean(x.favorite), purchased: Boolean(x.purchased) })) });
   }
   const parentMatch = path.match(/^\/parent\/wishes\/([a-f0-9-]{36})$/);
   if (parentMatch && method === 'PATCH') {
-    if (!parentAuthorized(request, env)) return fail('Parent key required or incorrect.', 403);
     const b = await safeJson(request);
     if (typeof b?.purchased !== 'boolean') return fail('Invalid update.', 400);
     const result = await env.DB.prepare('UPDATE wishes SET purchased = ? WHERE id = ?')
@@ -310,6 +322,16 @@ export default {
     if (url.pathname.startsWith('/api/')) {
       try { return await api(routed.request, env, url.pathname, url); }
       catch (error) { console.error('Christmas API failed:', error); return fail('Storage request failed. Please try again.', 500); }
+    }
+    // Require real Google sign-in for the parent dashboard HTML, not just its API.
+    // Keep child app assets and gameplay publicly available as before.
+    if (url.pathname === '/parent/' || url.pathname === '/parent/index.html') {
+      if (!parentAccessConfigured(env)) return fail('Google parent sign-in is not configured.', 503);
+      if (!await verifiedParentEmail(routed.request, env)) return fail('Google sign-in required.', 401);
+      const page = await env.ASSETS.fetch(routed.request);
+      const headers = new Headers(page.headers);
+      headers.set('Cache-Control', 'private, no-store');
+      return new Response(page.body, { status: page.status, statusText: page.statusText, headers });
     }
     return env.ASSETS.fetch(routed.request);
   },

@@ -79,7 +79,7 @@ describe("kids gateway", () => {
     });
   }
 
-  it("serves the parent dashboard through the Christmas service without dropping the prefix", async () => {
+  it("routes the parent dashboard through Christmas but blocks HTML without Google Access", async () => {
     const requestedAssets = [];
     const CHRISTMAS = { fetch: request => christmasWorker.fetch(request, {
       ASSETS: {
@@ -102,9 +102,9 @@ describe("kids gateway", () => {
       new Request("https://kids.corypahl.dev/christmas/parent/"),
       { CHRISTMAS },
     );
-    assert.equal(response.status, 200);
-    assert.match(await response.text(), /Christmas Parent Dashboard/);
-    assert.deepEqual(requestedAssets, ["/parent/"]);
+    assert.equal(response.status, 503);
+    assert.equal(response.headers.get("location"), null);
+    assert.deepEqual(requestedAssets, []);
   });
 
   it("redirects noncanonical parent URLs to the public Christmas prefix", async () => {
@@ -113,6 +113,20 @@ describe("kids gateway", () => {
       assert.equal(response.status, 308);
       assert.equal(response.headers.get("location"), "https://kids.corypahl.dev/christmas/parent/?hello=1");
     }
+  });
+
+  it("preserves the signed Access assertion for downstream parent APIs", async () => {
+    let assertion = null;
+    const env = { CHRISTMAS: { async fetch(request) {
+      assertion = request.headers.get("Cf-Access-Jwt-Assertion");
+      return new Response("verified downstream");
+    } } };
+    const response = await worker.fetch(new Request(
+      "https://kids.corypahl.dev/christmas/api/parent/wishes",
+      { headers: { "Cf-Access-Jwt-Assertion": "signed-test-token" } },
+    ), env);
+    assert.equal(response.status, 200);
+    assert.equal(assertion, "signed-test-token");
   });
 
   it("returns 503 when a matched route has no configured binding", async () => {

@@ -57,6 +57,9 @@ jobs:
         if: github.event_name != 'pull_request'
         env:
           CHRISTMAS_D1_DATABASE_ID: ${{ secrets.KIDS_CHRISTMAS_D1_DATABASE_ID }}
+          PARENT_ACCESS_TEAM_DOMAIN: ${{ vars.KIDS_PARENT_ACCESS_TEAM_DOMAIN }}
+          PARENT_ACCESS_AUD: ${{ vars.KIDS_PARENT_ACCESS_AUD }}
+          PARENT_ALLOWED_EMAILS: ${{ vars.KIDS_PARENT_ALLOWED_EMAILS }}
         run: |
           if [ -z "$CHRISTMAS_D1_DATABASE_ID" ]; then
             echo "::error::Add repository secret KIDS_CHRISTMAS_D1_DATABASE_ID after creating the D1 database"
@@ -73,8 +76,42 @@ jobs:
             migrations_dir: 'migrations'
           }];
           config.r2_buckets = [{ binding: 'MEDIA', bucket_name: 'kids-christmas-media' }];
+          // Do not deploy a keyless parent dashboard. Cloudflare Access must be
+          // configured on BOTH parent HTML and API paths before enabling this.
+          const domain = (process.env.PARENT_ACCESS_TEAM_DOMAIN || '').trim();
+          const audience = (process.env.PARENT_ACCESS_AUD || '').trim();
+          const emails = (process.env.PARENT_ALLOWED_EMAILS || '').trim();
+          if (!/^[a-z0-9-]+\.cloudflareaccess\.com$/.test(domain) || !audience ||
+              !emails.includes('@')) {
+            throw new Error('Set KIDS_PARENT_ACCESS_TEAM_DOMAIN, KIDS_PARENT_ACCESS_AUD, and KIDS_PARENT_ALLOWED_EMAILS repository variables after configuring Cloudflare Access.');
+          }
+          config.vars = {
+            ...(config.vars || {}),
+            CHRISTMAS_PARENT_ACCESS_TEAM_DOMAIN: domain,
+            CHRISTMAS_PARENT_ACCESS_AUD: audience,
+            CHRISTMAS_PARENT_ALLOWED_EMAILS: emails,
+          };
           fs.writeFileSync(path, JSON.stringify(config, null, 2));
           NODE
+
+      - name: Verify Google Access protects parent routes before deployment
+        if: github.event_name != 'pull_request'
+        run: |
+          set -euo pipefail
+          # Both URLs must go through Cloudflare Access before ANY parent-key
+          # authorization code is replaced by the Google-authenticated build.
+          for route in /christmas/parent/ /christmas/api/parent/wishes; do
+            headers="$(mktemp)"
+            status="$(curl --silent --show-error --max-time 15 \
+              --output /dev/null --dump-header "$headers" \
+              --write-out '%{http_code}' "https://kids.corypahl.dev$route")"
+            redirect="$(grep -i '^location:' "$headers" | tail -1 || true)"
+            rm -f "$headers"
+            if [[ ! "$status" =~ ^30[12378]$ ]] || [[ ! "$redirect" =~ /cdn-cgi/access/ ]]; then
+              echo "::error::Cloudflare Access is not protecting $route (HTTP $status). Create the Google-only path-scoped Access app before deploying."
+              exit 1
+            fi
+          done
 
       - name: Apply Christmas D1 migrations
         if: github.event_name != 'pull_request'
