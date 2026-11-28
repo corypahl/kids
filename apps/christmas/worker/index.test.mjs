@@ -12,7 +12,30 @@ describe('Christmas Worker', () => {
     assert.equal(assetRequest(make('/christmas/assets/app.js?x=1')).request.url, base + '/assets/app.js?x=1');
     assert.equal(assetRequest(make('/api/status')).request.url, base + '/api/status');
     assert.equal(assetRequest(make('/christmas/parent')).redirect, base + '/christmas/parent/');
-    assert.equal(assetRequest(make('/christmas/parent/')).request.url, base + '/parent/index.html');
+    assert.equal(assetRequest(make('/christmas/parent/')).request.url, base + '/parent/');
+    assert.equal(assetRequest(make('/parent/')).request.url, base + '/parent/');
+  });
+  it('serves the parent dashboard at its canonical /parent/ asset URL without redirects', async () => {
+    const visited = [];
+    const ASSETS = { fetch: async request => {
+      const path = new URL(request.url).pathname;
+      visited.push(path);
+      // Model Workers Assets canonicalization: nested index.html redirects
+      // to its directory URL and would break the public gateway.
+      if (path === '/parent/index.html') {
+        return Response.redirect(base + '/parent/', 307);
+      }
+      if (path === '/parent/') {
+        return new Response('<!doctype html><title>Christmas Parent Dashboard</title>', {
+          headers: { 'Content-Type': 'text/html' },
+        });
+      }
+      return new Response('Not Found', { status: 404 });
+    } };
+    const response = await worker.fetch(make('/parent/'), { ASSETS });
+    assert.equal(response.status, 200);
+    assert.match(await response.text(), /Christmas Parent Dashboard/);
+    assert.deepEqual(visited, ['/parent/']);
   });
   it('still serves the static app', async () => {
     assert.equal((await worker.fetch(make('/christmas/'), { ASSETS: assets })).status, 200);
