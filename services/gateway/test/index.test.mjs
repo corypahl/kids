@@ -115,6 +115,20 @@ describe("kids gateway", () => {
     }
   });
 
+  it("preserves the signed Access assertion for downstream parent APIs", async () => {
+    let assertion = null;
+    const env = { CHRISTMAS: { async fetch(request) {
+      assertion = request.headers.get("Cf-Access-Jwt-Assertion");
+      return new Response("verified downstream");
+    } } };
+    const response = await worker.fetch(new Request(
+      "https://kids.corypahl.dev/christmas/api/parent/wishes",
+      { headers: { "Cf-Access-Jwt-Assertion": "signed-test-token" } },
+    ), env);
+    assert.equal(response.status, 200);
+    assert.equal(assertion, "signed-test-token");
+  });
+
   it("returns 503 when a matched route has no configured binding", async () => {
     const response = await worker.fetch(
       new Request("https://kids.corypahl.dev/bedtime/"),
