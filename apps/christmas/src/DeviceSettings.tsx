@@ -38,7 +38,7 @@ export function DeviceSettings({ assignedChild, onSave, onClose }: {
     setError('');
     try {
       // Verify against the separate parent credential; do not persist it to the tablet.
-      await requestApi<{ ok: boolean }>('parent/verify', { parentKey: parentKey.trim() });
+      await requestApi<{ ok: boolean }>('device/verify', { parentKey: parentKey.trim() });
       setUnlocked(true);
       setParentKey('');
     } catch {
@@ -82,7 +82,7 @@ export function DeviceSettings({ assignedChild, onSave, onClose }: {
           <button className="action" type="submit" disabled={verifying || !parentKey.trim()}>
             {verifying ? 'Checking…' : '🔓 Unlock settings'}
           </button>
-          <small>Use the same key as the separate Christmas parent dashboard. It won’t be saved on this tablet.</small>
+          <small>This is the tablet-settings key, separate from Google sign-in for the parent dashboard. It won’t be saved on this tablet.</small>
         </form> : <div className="device-settings-chooser">
           <h3>Whose tablet is this?</h3>
           <div className="device-settings-children" role="radiogroup" aria-label="Choose one child for this tablet">
